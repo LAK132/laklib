@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#include "utils/stream_util.h"
+#include "utils/stream.h"
 
 void readFile(const string &src, string *dst)
 {
