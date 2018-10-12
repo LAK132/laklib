@@ -1,0 +1,3 @@
+[submodule "cql"]
+	path = cql
+	url = https://github.com/LAK132/cql.git
