@@ -24,8 +24,7 @@ SOFTWARE.
 
 #ifndef LASSERT
 #include <assert.h> // note: assert already handles NDEBUG
-#define LASSERT_MSG(message) #message
-#define LASSERT(assertion, message) assert((assertion) && (LASSERT_MSG(__FILE__) "(" LASSERT_MSG(__LINE__) ")" message))
+#define LASSERT(assertion, message) assert((assertion) && message)
 #endif // LASSERT
 
 #ifndef NDEBUG // debug mode
