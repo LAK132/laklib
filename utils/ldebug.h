@@ -30,6 +30,12 @@ SOFTWARE.
 #ifndef NDEBUG // debug mode
 #include <iostream>
 
+#ifndef NLTEST
+#ifndef LTEST
+#define LTEST
+#endif // LTEST
+#endif // NLTEST
+
 #ifndef LDEBUG
 #define LDEBUG(x) std::cout << __FILE__ << "(" << std::dec << __LINE__ << ") " << x << std::endl
 #endif // LDEBUG
