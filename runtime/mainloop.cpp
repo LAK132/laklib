@@ -142,68 +142,69 @@ namespace lak
         while (ld->running)
             draw_loop(*ld);
     }
+}
 
-    int main()
+int main()
+{
+    using namespace lak;
+    loopData_t ld;
+    init(ld);
+    ld.running = true;
+    #ifdef LAK_USE_SDL
+    ld.events.reserve(100);
+    #endif // LAK_USE_SDL
+
+    #ifdef LAK_USE_MULTITHREAD
+    #ifdef LAK_USE_SDL
+    thread update(run_update, &ld);
+    #endif // LAK_USE_SDL
+    thread draw(run_draw, &ld);
+    #endif // LAK_USE_MULTITHREAD
+
+    while(ld.running)
     {
-        loopData_t ld;
-        init(ld);
-        ld.running = true;
+        #ifndef LAK_USE_MULTITHREAD
         #ifdef LAK_USE_SDL
-        ld.events.reserve(100);
+
+        event(ld);
+
         #endif // LAK_USE_SDL
 
-        #ifdef LAK_USE_MULTITHREAD
+        draw_loop(ld);
+        update_loop(ld);
+
+        #else
         #ifdef LAK_USE_SDL
-        thread update(run_update, &ld);
-        #endif // LAK_USE_SDL
-        thread draw(run_draw, &ld);
-        #endif // LAK_USE_MULTITHREAD
 
-        while(ld.running)
-        {
-            #ifndef LAK_USE_MULTITHREAD
-            #ifdef LAK_USE_SDL
+        ticket_t windowt = ld.windowq.lock();
+        ticket_t eventt = ld.eventq.lock();
 
-            event(ld);
-
-            #endif // LAK_USE_SDL
-
-            draw_loop(ld);
-            update_loop(ld);
-
-            #else
-            #ifdef LAK_USE_SDL
-
-            ticket_t windowt = ld.windowq.lock();
-            ticket_t eventt = ld.eventq.lock();
-
-            SDL_GL_MakeCurrent(ld.window, ld.context);
-            event(ld);
-            SDL_GL_MakeCurrent(ld.window, 0);
-
-            eventt = nullptr;
-            windowt = nullptr;
-
-            #else
-
-            update_loop(ld);
-
-            #endif // LAK_USE_SDL
-            #endif // LAK_USE_MULTITHREAD
-        }
-
-        #ifdef LAK_USE_MULTITHREAD
-        #ifdef LAK_USE_SDL
-        update.join();
-        #endif // LAK_USE_SDL
-        draw.join();
-        #endif // LAK_USE_MULTITHREAD
-
-        #ifdef LAK_USE_SDL
         SDL_GL_MakeCurrent(ld.window, ld.context);
-        #endif // LAK_USE_SDL
+        event(ld);
+        SDL_GL_MakeCurrent(ld.window, 0);
 
-        shutdown(ld);
-        return EXIT_SUCCESS;
+        eventt = nullptr;
+        windowt = nullptr;
+
+        #else
+
+        update_loop(ld);
+
+        #endif // LAK_USE_SDL
+        #endif // LAK_USE_MULTITHREAD
     }
+
+    #ifdef LAK_USE_MULTITHREAD
+    #ifdef LAK_USE_SDL
+    update.join();
+    #endif // LAK_USE_SDL
+    draw.join();
+    #endif // LAK_USE_MULTITHREAD
+
+    #ifdef LAK_USE_SDL
+    SDL_GL_MakeCurrent(ld.window, ld.context);
+    #endif // LAK_USE_SDL
+
+    shutdown(ld);
+    return EXIT_SUCCESS;
 }
