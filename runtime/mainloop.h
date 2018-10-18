@@ -24,6 +24,7 @@ SOFTWARE.
 
 #include <cmath>
 #include <vector>
+#include <string>
 
 #ifndef LAK_NO_SDL
 #define LAK_USE_SDL
@@ -44,6 +45,8 @@ SOFTWARE.
 #include <mutex>
 #include "types/queue.h"
 #endif // LAK_USE_MULTITHREAD
+
+#include <glm/vec2.hpp>
 
 #ifndef LAK_MAINLOOP_H
 #define LAK_MAINLOOP_H
@@ -70,6 +73,43 @@ namespace lak
         // screen size
         float x;
         float y;
+    };
+
+    struct mouse_t
+    {
+        glm::vec2 pos = {0.0f, 0.0f};    // x, y position of mouse on screen
+        glm::vec2 delta = {0.0f, 0.0f};  // x, y delta of mouse position
+        glm::ivec2 wheel = {0, 0};  // x, y delta of scroll wheel
+        bool inUse = false;         // useful for mouse use scoping
+        bool left = false;
+        bool leftClicked = false;
+        bool right = false;
+        bool rightClicked = false;
+        bool middle = false;
+        bool middleClicked = false;
+    };
+
+    struct keyboard_t
+    {
+        bool inUse = false;         // useful for keyboard use scoping
+
+        std::string text = "";
+
+        bool shift = false;
+        bool alt = false;
+        bool ctrl = false;
+
+        bool capslock = false;
+        bool numlock = false;
+
+        bool tab = false;
+        bool backspace = false;
+        bool del = false;
+
+        bool left = false;
+        bool right = false;
+        bool up = false;
+        bool down = false;
     };
 
     struct loopData_t
@@ -102,6 +142,8 @@ namespace lak
         double updateDelta = 0.0;
 
         screen_t screen;
+        mouse_t mouse;
+        keyboard_t keyboard;
 
         userData_t* userData;
     };
