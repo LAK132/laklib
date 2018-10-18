@@ -56,27 +56,27 @@ namespace lak
         // params
         stride_vector data = {};    // data to push to the GPU
         GLenum type = GL_FLOAT;     // type of the data
-        GLint size = 4;            // `type`s per element count (vec2 = 2, vec3 = 3, etc...)
+        GLint size = 4;             // `type`s per element count (vec2 = 2, vec3 = 3, etc...)
         GLuint divisor = 0;         // buffer steps per vertex (0->every vtx, 1->every mesh, 2->every 2 meshes, etc...)
         bool normalised = false;
         bool active = false;
-        bool dirty = true;         // set to true to update during the next update call
+        bool dirty = true;          // set to true to update during the next update call
 
         // stringable functions to initalise vertex element
-        template<typename T> inline vertexElement_t& setData(const T &d) { dirty = true; data = d; return *this; }
-        template<typename T> inline vertexElement_t& setData(T &&d) { dirty = true; data = d; return *this; }
-        inline vertexElement_t& setType(GLenum t) { type = t; return *this; }
-        inline vertexElement_t& setSize(GLint s) { size = s; return *this; }
+        template<typename T> inline vertexElement_t& setData(GLenum t, GLint s, const T &d)
+        { dirty = true; type = t; size = s; data = d; return *this; }
+        template<typename T> inline vertexElement_t& setData(GLenum t, GLint s, T &&d)
+        { dirty = true; type = t; size = s; data = d; return *this; }
         inline vertexElement_t& setDivisor(GLuint d) { divisor = d; return *this; }
         inline vertexElement_t& setNormalised(bool n) { normalised = n; return *this; }
-        inline vertexElement_t& setActive(bool n) { normalised = n; return *this; }
+        inline vertexElement_t& setActive(bool n) { active = n; return *this; }
     };
 
     struct vertexBuffer_t
     {
         // readonly
-        GLuint buffer;
-        size_t size;
+        GLuint buffer = 0xBAD;
+        size_t size = 0;
         // params
         unordered_map<string, vertexElement_t> elements{};
         GLenum usage = GL_STATIC_DRAW;
@@ -92,7 +92,7 @@ namespace lak
         GLuint vertArray = 0;
         GLuint indexBuffer = 0;
         // params
-        vector<vertexBuffer_t> buffers;
+        vector<vertexBuffer_t> buffers = {};
         void init();
         void bind();
         ~vertexArray_t();
@@ -104,11 +104,11 @@ namespace lak
         vertexArray_t vertArray;
         // params
         shader_t shader;
-        unordered_map<string, shared_ptr<texture_t>> textures;
+        unordered_map<string, shared_ptr<texture_t>> textures{};
         vector<GLuint> index = {};  // will use index mode if size > 0
         GLenum drawMode = GL_TRIANGLES;
         size_t indexCount = 0;      // readonly if using index
-        bool dirty = true;         // set true to force an update during the next draw call
+        bool dirty = true;          // set true to force an update during the next draw call
         void update();
         void draw(GLsizei count = 1, const void *indexOffset = NULL);
     };
