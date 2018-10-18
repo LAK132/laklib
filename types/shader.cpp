@@ -34,6 +34,7 @@ namespace lak
     bool shaderProgram_t::init()
     {
         program = glCreateProgram();
+        LASSERT(program, "Failed to create shader program");
         return program != 0;
     }
 
@@ -45,7 +46,7 @@ namespace lak
     bool shaderProgram_t::attachShader(const string &code, GLenum type, string *error)
     {
         GLuint shader = glCreateShader(type);
-        // if (!shader) {} // GL_INVALID_ENUM
+        LASSERT(shader, "Failed to create shader");
         GLchar* shaderstr = (GLchar*)&(code.c_str()[0]);
         glShaderSource(shader, 1, &shaderstr, NULL);
         glCompileShader(shader);
@@ -59,7 +60,7 @@ namespace lak
                 glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &msgSize);
                 error->resize(msgSize);
                 glGetShaderInfoLog(shader, msgSize, NULL, (GLchar*)&(error->c_str()[0]));
-            }
+            } else LASSERT(false, "Failed to compile shader");
             return false;
         }
         glAttachShader(program, shader);
@@ -77,7 +78,7 @@ namespace lak
                 glGetProgramiv(program, GL_INFO_LOG_LENGTH, &msgSize);
                 error->resize(msgSize);
                 glGetProgramInfoLog(program, msgSize, NULL, (GLchar*)&(error->c_str()[0]));
-            }
+            } else LASSERT(false, "Failed to link program");
             return false;
         }
 
@@ -152,7 +153,7 @@ namespace lak
             glGetProgramiv(program, GL_INFO_LOG_LENGTH, &msgSize);
             message->resize(msgSize);
             glGetProgramInfoLog(program, msgSize, NULL, (GLchar*)&(message->c_str()[0]));
-        }
+        } else LASSERT(valid, "Failed to validate shader");
         return valid != 0;
     }
 
@@ -160,9 +161,11 @@ namespace lak
     {
         auto uniform = uniforms.find(name);
         if (uniform == uniforms.end()) {
+            #ifdef LTEST
             LERROR("Failed to find uniform \"" << name << "\"");
             LERROR("Available uniforms are :");
             for (auto it : uniforms) LERROR(it.first);
+            #endif
             return;
         }
         enable();
@@ -248,6 +251,11 @@ namespace lak
         glGetIntegerv(GL_CURRENT_PROGRAM, &curProg);
         if (curProg != program)
             glUseProgram(program);
+
+        #ifdef LTEST
+        glGetIntegerv(GL_CURRENT_PROGRAM, &curProg);
+        LASSERT(curProg == program, "Failed to enable shader");
+        #endif
     }
 
     shaderProgram_t operator"" _shaderProgram (const char *str, const size_t size)

@@ -38,6 +38,11 @@ namespace lak
         GLint current;
         glGetIntegerv(GL_ARRAY_BUFFER_BINDING, &current);
         if (current != buffer) glBindBuffer(GL_ARRAY_BUFFER, buffer);
+
+        #ifdef LTEST
+        glGetIntegerv(GL_ARRAY_BUFFER_BINDING, &current);
+        LASSERT(current == buffer, "Buffer bind failed");
+        #endif
     }
 
     bool vertexBuffer_t::update()
@@ -77,6 +82,12 @@ namespace lak
                 size = interlaced.size();
                 glBufferData(GL_ARRAY_BUFFER, size, &interlaced.data[0], usage);
             }
+            #ifdef LTEST
+            if (!size) LDEBUG("Buffer empty");
+            decltype(interlaced.data) check; check.resize(size);
+            glGetBufferSubData(GL_ARRAY_BUFFER, NULL, size, &check[0]);
+            LASSERT(check == interlaced.data, "Incorrect buffer data");
+            #endif // LTEST
         }
 
         return dirty;
@@ -107,6 +118,13 @@ namespace lak
         if (current != vertArray) glBindVertexArray(vertArray);
         glGetIntegerv(GL_ELEMENT_ARRAY_BUFFER_BINDING, &current);
         if (current != indexBuffer) glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
+
+        #ifdef LTEST
+        glGetIntegerv(GL_VERTEX_ARRAY_BINDING, &current);
+        LASSERT(current == vertArray, "Failed to bind vertex array");
+        glGetIntegerv(GL_ELEMENT_ARRAY_BUFFER_BINDING, &current);
+        LASSERT(current == indexBuffer, "Failed to bind index buffer");
+        #endif // LTEST
     }
 
     //
@@ -119,9 +137,15 @@ namespace lak
             vertArray.init();
         vertArray.bind();
 
+        #ifdef LTEST
+        if (shader.use_count() == 0)
+            LDEBUG("No shader");
+        #endif // LTEST
+
         for (auto &buffer : vertArray.buffers)
         {
-            if (buffer.update() && shader.use_count() > 0)
+            if (buffer.update())
+            if (shader.use_count() > 0)
             for (auto &element : buffer.elements)
             {
                 auto &&attribute = shader->attributes.find(element.first);
@@ -131,9 +155,13 @@ namespace lak
                     {
                         glEnableVertexAttribArray(attribute->second.position);
                         glVertexAttribDivisor(attribute->second.position, element.second.divisor);
-                        glVertexAttribPointer(attribute->second.position, attribute->second.size, attribute->second.type, element.second.normalised, element.second.interlacedStride, (GLvoid*)element.second.offset);
-                        // glVertexAttribPointer(attribute->second.position, element.second.size, element.second.type, element.second.normalised, element.second.interlacedStride, (GLvoid*)element.second.offset);
+                        glVertexAttribPointer(attribute->second.position, element.second.size, element.second.type, element.second.normalised, element.second.interlacedStride, (GLvoid*)element.second.offset);
                         attribute->second.active = true;
+
+                        #ifdef LTEST
+                        LASSERT(attribute->second.size == element.second.size, "Shader and buffer type size don't match");
+                        LASSERT(attribute->second.type == element.second.type, "Shader and buffer type don't match");
+                        #endif // LTEST
                     }
                     else
                     {
@@ -148,6 +176,12 @@ namespace lak
         {
             indexCount = index.size();
             glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexCount * sizeof(GLuint), &(index[0]), GL_STATIC_DRAW);
+
+            #ifdef LTEST
+            vector<GLuint> check; check.resize(indexCount);
+            glGetBufferSubData(GL_ELEMENT_ARRAY_BUFFER, NULL, indexCount * sizeof(GLuint), &check[0]);
+            LASSERT(check == index, "Incorrect index buffer data");
+            #endif // LTEST
         }
 
         dirty = false;
@@ -155,13 +189,23 @@ namespace lak
 
     void mesh_t::draw(GLsizei count, const void *indexOffset)
     {
-        if (dirty) update();
-        else vertArray.bind();
+        #ifdef LTEST
+        LASSERT(shader.use_count(), "No shader");
+        if (!indexCount) LDEBUG("No indices");
+        if (!count) LDEBUG("No instances");
+        #endif // LTEST
+
+        if (dirty)
+            update();
+        else
+            vertArray.bind();
+
         if (shader.use_count() > 0)
             shader->enable();
         for (auto &texture : textures)
             if (texture.second.use_count() > 0)
                 texture.second->bind();
+
         if (index.size() > 0)
             glDrawElementsInstanced(drawMode, indexCount, GL_UNSIGNED_INT, indexOffset, count);
         else
