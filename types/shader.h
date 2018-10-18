@@ -25,6 +25,7 @@ SOFTWARE.
 #include <stdint.h>
 #include <vector>
 #include <unordered_map>
+#include <cstring>
 #include <string>
 #include <memory>
 
