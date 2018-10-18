@@ -60,7 +60,9 @@ namespace lak
 
     stride_vector &stride_vector::operator=(stride_vector &&other)
     {
-        return *this = other;
+        stride = other.stride;
+        data = other.data;
+        return *this;
     }
 
     vector<uint8_t> stride_vector::operator[](size_t idx) const
@@ -90,12 +92,6 @@ namespace lak
                     rtn.data.push_back(*it2);
             }
         }
-        return rtn;
-    }
-
-    stride_vector stride_vector::interleave(vector<stride_vector*>&& vecs)
-    {
-        const stride_vector& rtn = interleave(vecs); // idk if this is required, but better safe than sorry
         return rtn;
     }
 }
