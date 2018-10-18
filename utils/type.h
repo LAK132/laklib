@@ -30,6 +30,9 @@ SOFTWARE.
 
 namespace lak
 {
+    using std::declval;
+    using std::decay;
+
     // Returns the first template type if a template, else return the base type
     template<typename T>
     struct _template_t
