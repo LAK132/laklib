@@ -24,17 +24,35 @@ SOFTWARE.
 
 #include "types/mesh.h"
 
+#ifdef LTEST
+#include "runtime/mainloop.h"
+#endif // LTEST
+
 namespace lak
 {
     //
     // vertexBuffer_t
     //
 
-    vertexBuffer_t::vertexBuffer_t() { glGenBuffers(1, &buffer); }
-    vertexBuffer_t::~vertexBuffer_t() { glDeleteBuffers(1, &buffer); }
+    vertexBuffer_t::vertexBuffer_t() {}
+    vertexBuffer_t::~vertexBuffer_t() { if (init) glDeleteBuffers(1, &buffer); }
 
     void vertexBuffer_t::bind()
     {
+        #ifdef LTEST
+        LASSERT(threadData.haveContext, "Bind will fail, this thread doesn't have OpenGL context");
+        #endif // LTEST
+
+        if (!init)
+        {
+            glGenBuffers(1, &buffer);
+            init = true;
+        }
+
+        #ifdef LTEST
+        LASSERT(init, "Buffer not initialised");
+        #endif // LTEST
+
         GLint current;
         glGetIntegerv(GL_ARRAY_BUFFER_BINDING, &current);
         if (current != buffer) glBindBuffer(GL_ARRAY_BUFFER, buffer);
@@ -73,7 +91,7 @@ namespace lak
 
             stride_vector interlaced = stride_vector::interleave(groupElems);
 
-            if (interlaced.size() == size)
+            if (size && interlaced.size() == size)
             {
                 glBufferSubData(GL_ARRAY_BUFFER, NULL, size, &interlaced.data[0]);
             }
@@ -82,10 +100,20 @@ namespace lak
                 size = interlaced.size();
                 glBufferData(GL_ARRAY_BUFFER, size, &interlaced.data[0], usage);
             }
+
             #ifdef LTEST
-            if (!size) LDEBUG("Buffer empty");
+            if (!size)
+            {
+                LDEBUG("Buffer empty");
+                LDEBUG("Interlaced Size: " << interlaced.size());
+            }
             decltype(interlaced.data) check; check.resize(size);
             glGetBufferSubData(GL_ARRAY_BUFFER, NULL, size, &check[0]);
+            if (check != interlaced.data)
+            {
+                LDEBUG("Check size: " << check.size());
+                LDEBUG("Interlaced size: " << interlaced.data.size());
+            }
             LASSERT(check == interlaced.data, "Incorrect buffer data");
             #endif // LTEST
         }
@@ -183,22 +211,30 @@ namespace lak
             LASSERT(check == index, "Incorrect index buffer data");
             #endif // LTEST
         }
+        #ifdef LTEST
+        else LDEBUG("No indices");
+        #endif // LTEST
 
         dirty = false;
     }
 
     void mesh_t::draw(GLsizei count, const void *indexOffset)
     {
-        #ifdef LTEST
-        LASSERT(shader.use_count(), "No shader");
-        if (!indexCount) LDEBUG("No indices");
-        if (!count) LDEBUG("No instances");
-        #endif // LTEST
+        if (!count) return;
 
         if (dirty)
             update();
         else
             vertArray.bind();
+
+        #ifdef LTEST
+        if (dirty)
+            LDEBUG("Dirty");
+        LASSERT(shader.use_count(), "No shader");
+        if (!index.size())
+            LDEBUG("Index vector empty");
+        LASSERT(indexCount, "No indices");
+        #endif // LTEST
 
         if (shader.use_count() > 0)
             shader->enable();
