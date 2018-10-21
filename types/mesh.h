@@ -75,7 +75,8 @@ namespace lak
     struct vertexBuffer_t
     {
         // readonly
-        GLuint buffer = 0xBAD;
+        bool init = false;
+        GLuint buffer = 0xBADBEEF;
         size_t size = 0;
         // params
         unordered_map<string, vertexElement_t> elements{};

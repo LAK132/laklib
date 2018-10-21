@@ -112,20 +112,24 @@ namespace lak
         bool down = false;
     };
 
+    struct threadData_t
+    {
+        bool wantContext = false;
+        bool haveContext = false;
+    };
+
+    extern thread_local threadData_t threadData;
+
     struct loopData_t
     {
         #ifdef LAK_USE_MULTITHREAD
         queue_t windowq;
         queue_t drawq;
-        atomic_bool updateNeedsContext = false;
-        atomic_bool updateHasContext = false;
         atomic_bool running = true;
         #ifdef LAK_USE_SDL
         queue_t eventq;
         #endif // LAK_USE_SDL
         #else
-        bool updateNeedsContext = false;
-        const bool updateHasContext = true;
         bool running = true;
         #endif // LAK_USE_MULTITHREAD
 
