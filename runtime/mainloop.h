@@ -110,6 +110,9 @@ namespace lak
         bool right = false;
         bool up = false;
         bool down = false;
+
+        bool keys[0xFF] = {0};
+        bool keysOnce[0xFF] = {0};
     };
 
     struct threadData_t
@@ -123,11 +126,11 @@ namespace lak
     struct loopData_t
     {
         #ifdef LAK_USE_MULTITHREAD
-        queue_t windowq;
-        queue_t drawq;
+        queue_t contextQueue;
+        queue_t drawQueue;
         atomic_bool running = true;
         #ifdef LAK_USE_SDL
-        queue_t eventq;
+        queue_t updateQueue;
         #endif // LAK_USE_SDL
         #else
         bool running = true;
