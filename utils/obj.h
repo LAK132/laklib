@@ -91,11 +91,14 @@ namespace lak
                     uvw_t u;
                     getNumber(strm, u[0]);
                     getNumber(strm, u[1]);
-                    skipAll(strm, " \t");
-                    char c;
-                    if ((c = strm.peek()) != '\r' && c != '\n')
-                        getNumber(strm, u[2])
-                    else u[2] = 0.0f;
+                    if (sizeof(uvw_t) >= sizeof(u[0]) * 3)
+                    {
+                        skipAll(strm, " \t");
+                        char c;
+                        if ((c = strm.peek()) != '\r' && c != '\n')
+                            getNumber(strm, u[2])
+                        else u[2] = 0.0f;
+                    }
                     uvw->push_back(u);
                 }
             }

@@ -76,21 +76,18 @@ namespace lak
                         switch(glformat)
                         {
                             case GL_RED: {
-                                pixels[i] = {pix[i]};
+                                pixels[i] = pix+i;
                             } break;
                             case GL_RG: {
-                                size_t j = i * 2;
-                                pixels[i] = {pix[j], pix[j+1]};
+                                pixels[i] = pix+(i*2);
                             } break;
                             case GL_RGB:
                             case GL_BGR: {
-                                size_t j = i * 3;
-                                pixels[i] = {pix[j], pix[j+1], pix[j+2]};
+                                pixels[i] = pix+(i*3);
                             } break;
                             case GL_RGBA:
                             case GL_BGRA: {
-                                size_t j = i * 4;
-                                pixels[i] = {pix[j], pix[j+1], pix[j+2], pix[j+3]};
+                                pixels[i] = pix+(i*4);
                             } break;
                             default: LERROR("INVALID TYPE"); return;
                         }
@@ -107,7 +104,7 @@ namespace lak
                     case GL_UNSIGNED_INT_8_8_8_8_REV:
                     case GL_UNSIGNED_INT_10_10_10_2:
                     case GL_UNSIGNED_INT_2_10_10_10_REV: {
-                        pixels[i] = pix[i];
+                        pixels[i] = pix+i;
                     } break;
                     default: LERROR("INVALID TYPE"); return;
                 }

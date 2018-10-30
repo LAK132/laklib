@@ -41,17 +41,17 @@ namespace lak
 
         #ifdef LAK_USE_MULTITHREAD
         #ifdef LAK_USE_SDL
-        ticket_t eventt = ld.eventq.lock();
-        ticket_t ticket;
+        ticket_t updateTicket = ld.updateQueue.lock();
+        ticket_t drawTicket;
         if(threadData.wantContext) // slower but allows for OpenGL calls
         {
-            ticket = ld.windowq.lock();
+            drawTicket = ld.contextQueue.lock();
             SDL_GL_MakeCurrent(ld.window, ld.context);
             threadData.haveContext = true;
         }
         else // faster but thread can't make OpenGL calls
         {
-            ticket = ld.drawq.lock();
+            drawTicket = ld.drawQueue.lock();
         }
         #endif // LAK_USE_SDL
         #endif // LAK_USE_MULTITHREAD
@@ -65,8 +65,8 @@ namespace lak
             SDL_GL_MakeCurrent(ld.window, 0);
             threadData.haveContext = false;
         }
-        ticket = nullptr;
-        eventt = nullptr;
+        drawTicket = nullptr;
+        updateTicket = nullptr;
         #endif // LAK_USE_SDL
         #endif // LAK_USE_MULTITHREAD
     }
@@ -105,7 +105,7 @@ namespace lak
         #endif // LAK_USE_SDL
 
         #ifdef LAK_USE_MULTITHREAD
-        ticket_t windowt = ld.windowq.lock();
+        ticket_t contextTicket = ld.contextQueue.lock();
         #endif // LAK_USE_MULTITHREAD
 
         #ifdef LAK_USE_SDL
@@ -114,13 +114,13 @@ namespace lak
         #endif // LAK_USE_SDL
 
         #ifdef LAK_USE_MULTITHREAD
-        ticket_t drawt = ld.drawq.lock();
+        ticket_t drawTicket = ld.drawQueue.lock();
         #endif // LAK_USE_MULTITHREAD
 
         draw(ld);
 
         #ifdef LAK_USE_MULTITHREAD
-        drawt = nullptr;
+        drawTicket = nullptr;
         #endif // LAK_USE_MULTITHREAD
 
         #ifdef LAK_USE_SDL
@@ -130,7 +130,7 @@ namespace lak
         #endif // LAK_USE_SDL
 
         #ifdef LAK_USE_MULTITHREAD
-        windowt = nullptr;
+        contextTicket = nullptr;
         #endif // LAK_USE_MULTITHREAD
 
         #ifdef LAK_USE_SDL
@@ -181,8 +181,8 @@ int main()
         #else
         #ifdef LAK_USE_SDL
 
-        ticket_t windowt = ld.windowq.lock();
-        ticket_t eventt = ld.eventq.lock();
+        ticket_t updateTicket= ld.updateQueue.lock();
+        ticket_t contextTicket = ld.contextQueue.lock();
 
         SDL_GL_MakeCurrent(ld.window, ld.context);
         threadData.haveContext = true;
@@ -190,8 +190,8 @@ int main()
         SDL_GL_MakeCurrent(ld.window, 0);
         threadData.haveContext = false;
 
-        eventt = nullptr;
-        windowt = nullptr;
+        contextTicket = nullptr;
+        updateTicket = nullptr;
 
         #else
 
