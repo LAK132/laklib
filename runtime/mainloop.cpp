@@ -48,6 +48,8 @@ namespace lak
             drawTicket = ld.contextQueue.lock();
             SDL_GL_MakeCurrent(ld.window, ld.context);
             threadData.haveContext = true;
+            // reset this every loop to prevent accidentally leaving it set
+            threadData.wantContext = false;
         }
         else // faster but thread can't make OpenGL calls
         {
