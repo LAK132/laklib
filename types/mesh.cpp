@@ -222,17 +222,14 @@ namespace lak
     {
         if (!count) return;
 
-        #ifdef LTEST
-        if (dirty)
-            LDEBUG("Dirty");
-        #endif // LTEST
-
         if (dirty)
             update();
         else
             vertArray.bind();
 
         #ifdef LTEST
+        if (dirty)
+            LERROR("Dirty");
         LASSERT(shader.use_count(), "No shader");
         if (!index.size())
             LDEBUG("Index vector empty");

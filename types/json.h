@@ -227,7 +227,10 @@ namespace lak
             template<typename T>
             inline typename std::enable_if<has_type<T, number_t>, T>::type& get()
             {
-                if (!is_type<T>()) {val = number_t(); setNumType<T>();}
+                if (val.index() != NUMBER)
+                    val = number_t();
+                if (!std::holds_alternative<T>(std::get<number_t>(val)))
+                    setNumType<T>();
                 return std::get<T>(std::get<number_t>(val));
             }
             template<typename T>
