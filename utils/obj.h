@@ -78,9 +78,9 @@ namespace lak
                 if (verts != nullptr)
                 {
                     vert_t v;
-                    getNumber(strm, v[0]);
-                    getNumber(strm, v[1]);
-                    getNumber(strm, v[2]);
+                    v[0] = getNumber<decltype(v[0])>(strm);
+                    v[1] = getNumber<decltype(v[1])>(strm);
+                    v[2] = getNumber<decltype(v[2])>(strm);
                     verts->push_back(v);
                 }
             }
@@ -89,14 +89,14 @@ namespace lak
                 if (uvw != nullptr)
                 {
                     uvw_t u;
-                    getNumber(strm, u[0]);
-                    getNumber(strm, u[1]);
+                    u[0] = getNumber<decltype(u[0])>(strm);
+                    u[1] = getNumber<decltype(u[1])>(strm);
                     if (sizeof(uvw_t) >= sizeof(u[0]) * 3)
                     {
                         skipAll(strm, " \t");
                         char c;
                         if ((c = strm.peek()) != '\r' && c != '\n')
-                            getNumber(strm, u[2])
+                            u[2] = getNumber<decltype(u[2])>(strm);
                         else u[2] = 0.0f;
                     }
                     uvw->push_back(u);
@@ -107,9 +107,9 @@ namespace lak
                 if (normals != nullptr)
                 {
                     norm_t n;
-                    getNumber(strm, n[0]);
-                    getNumber(strm, n[1]);
-                    getNumber(strm, n[2]);
+                    n[0] = getNumber<decltype(n[0])>(strm);
+                    n[1] = getNumber<decltype(n[1])>(strm);
+                    n[2] = getNumber<decltype(n[2])>(strm);
                     normals->push_back(n);
                 }
             }
@@ -123,7 +123,7 @@ namespace lak
                     char c;
                     do
                     {
-                        size_t v; getNumber(strm, v); --v;
+                        size_t v = getNumber<size_t>(strm); --v;
                         size_t vt = 0, vn = 0;
                         skipAll(strm, " \t");
                         if (strm.peek() == '/')
@@ -132,13 +132,13 @@ namespace lak
                             skipAll(strm, " \t");
                             if (strm.peek() != '/')
                             {
-                                getNumber(strm, vt); --vt;
+                                vt = getNumber<size_t>(strm); --vt;
                                 skipAll(strm, " \t");
                             }
                             if (strm.peek() == '/')
                             {
                                 strm.get();
-                                getNumber(strm, vn); --vn;
+                                vn = getNumber<size_t>(strm); --vn;
                             }
                         }
                         skipAll(strm, " \t");

@@ -25,6 +25,7 @@ SOFTWARE.
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <type_traits>
 
 #include "utils/ldebug.h"
 
@@ -51,13 +52,21 @@ using std::endl;
 #define skipNone(_strm, _str)           for(const string _s = _str; _s.find_first_of(_strm.peek()) == string::npos && _strm.good(); _strm.get())
 #define skipNoneS(_strm, _str)          for(;_str.find_first_of(_strm.peek()) == string::npos && _strm.good(); _strm.get())
 #define skipNoneC(_strm, _str, _c)      for(const string _s = _str; _s.find_first_of(_c = _strm.peek()) == string::npos && _strm.good(); _strm.get())
-#define getNumber(_strm, _num)          {long double _d; _strm >> _d; _num = _d;}
-#define getNumberT(_type, _strm, _num)  {_type _d; _strm >> _d; _num = _d;}
+// #define getNumber(_strm, _num)          {long double _d; _strm >> _d; _num = _d;}
+// #define getNumberT(_type, _strm, _num)  {_type _d; _strm >> _d; _num = _d;}
 
 void readFile(const string& src, string* dst);
 void readFile(string&& src, string* dst);
 string readFile(const string& src);
 string readFile(string&& src);
+
+template<typename NUM, typename CHAR>
+std::remove_reference_t<NUM> getNumber(basic_istream<CHAR> &strm)
+{
+    std::remove_reference_t<NUM> rtn;
+    strm >> rtn;
+    return rtn;
+}
 
 template<typename CHAR2, typename CHAR1>
 basic_string<CHAR2> getString(basic_istream<CHAR1>& strm, const CHAR2 terminator)

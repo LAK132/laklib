@@ -33,6 +33,10 @@ namespace lak
     using std::declval;
     using std::decay;
 
+    // Use when you otherwise need need constexpr static_assert(false)
+    template<typename T> struct always_false { static constexpr bool value = false; };
+    template<typename T> static constexpr bool always_false_v = always_false<T>::value;
+
     // Returns the first template type if a template, else return the base type
     template<typename T>
     struct _template_t
