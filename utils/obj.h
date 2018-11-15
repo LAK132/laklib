@@ -118,8 +118,8 @@ namespace lak
                 if (indices != nullptr)
                 {
                     indices->push_back({});
-                    auto &face = indices->back();
-                    face.reserve(3);
+                    size_t face = indices->size()-1;
+                    (*indices)[face].reserve(3);
                     char c;
                     do
                     {
@@ -142,20 +142,20 @@ namespace lak
                             }
                         }
                         skipAll(strm, " \t");
-                        face.push_back({v, vt, vn});
+                        (*indices)[face].push_back({v, vt, vn});
                         ++vcount;
                     } while ((c = strm.peek()) != '\r' && c != '\n' && strm.good());
                     // split the face up if it happens to be an n-gon
-                    while (face.size() > 3)
+                    while ((*indices)[face].size() > 3)
                     {
                         indices->push_back({});
                         auto &newface = indices->back();
                         newface.reserve(3);
-                        newface.push_back(face[0]);
-                        auto &&it = face.begin() + (face.size() - 2);
+                        newface.push_back((*indices)[face][0]);
+                        auto &&it = (*indices)[face].begin() + ((*indices)[face].size() - 2);
                         newface.push_back(*(it++));
                         newface.push_back(*(it++));
-                        face.pop_back();
+                        (*indices)[face].pop_back();
                     }
                 }
             }
