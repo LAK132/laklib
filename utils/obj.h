@@ -42,6 +42,41 @@ namespace lak
     using std::string;
 
     template <typename vert_t, typename uvw_t, typename norm_t>
+    void noIndexOBJ(vector<vert_t>* verts, vector<uvw_t>* uvw, vector<norm_t>* normals, vector<vector<tuple<size_t, size_t, size_t>>>* indices)
+    {
+        vector<vert_t> _verts;
+        if (verts != nullptr) _verts.reserve(verts->size());
+        vector<uvw_t> _uvw;
+        if (uvw != nullptr) _uvw.reserve(uvw->size());
+        vector<norm_t> _normals;
+        if (normals != nullptr) _normals.reserve(normals->size());
+
+        if (indices != nullptr)
+        {
+            auto &ind = *indices;
+            for (auto &it : ind)
+            {
+                auto &[v0, u0, n0] = it[0];
+                if (verts != nullptr) _verts.push_back((*verts)[v0]);
+                if (uvw != nullptr) _uvw.push_back((*uvw)[u0]);
+                if (normals != nullptr) _normals.push_back((*normals)[n0]);
+                auto &[v1, u1, n1] = it[1];
+                if (verts != nullptr) _verts.push_back((*verts)[v1]);
+                if (uvw != nullptr) _uvw.push_back((*uvw)[u1]);
+                if (normals != nullptr) _normals.push_back((*normals)[n1]);
+                auto &[v2, u2, n2] = it[2];
+                if (verts != nullptr) _verts.push_back((*verts)[v2]);
+                if (uvw != nullptr) _uvw.push_back((*uvw)[u2]);
+                if (normals != nullptr) _normals.push_back((*normals)[n2]);
+            }
+        }
+
+        if (verts != nullptr) *verts = _verts;
+        if (uvw != nullptr) *uvw = _uvw;
+        if (normals != nullptr) *normals = _normals;
+    }
+
+    template <typename vert_t, typename uvw_t, typename norm_t>
     void readOBJ(istream& strm, vector<vert_t>* verts, vector<uvw_t>* uvw, vector<norm_t>* normals, vector<vector<tuple<size_t, size_t, size_t>>>* indices, size_t* vertCount)
     {
         streampos start = strm.tellg();

@@ -231,8 +231,8 @@ namespace lak
         if (dirty)
             LERROR("Dirty");
         LASSERT(shader.use_count(), "No shader");
-        if (!index.size())
-            LDEBUG("Index vector empty");
+        // if (!index.size())
+        //     LDEBUG("Index vector empty");
         LASSERT(indexCount, "No indices");
         #endif // LTEST
 
