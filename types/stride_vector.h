@@ -42,11 +42,9 @@ namespace lak
         stride_vector();
         stride_vector(size_t size);
         stride_vector(const stride_vector& other);
-        stride_vector(stride_vector&& other);
         void init(size_t size, size_t str = 1);
         inline size_t size() const { return data.size(); }
         stride_vector& operator=(const stride_vector& other);
-        stride_vector& operator=(stride_vector&& other);
         vector<uint8_t> operator[](size_t idx) const;
         template <typename T>
         T& at(size_t idx)
@@ -67,14 +65,6 @@ namespace lak
             return *this;
         }
         template <typename T>
-        stride_vector& operator=(vector<T>&& other)
-        {
-            stride = sizeof(T);
-            data.resize(sizeof(T) * other.size());
-            memcpy(&data[0], &other[0], data.size());
-            return *this;
-        }
-        template <typename T>
         inline T* get()
         {
             return (T*)&(data[0]);
@@ -85,14 +75,7 @@ namespace lak
             stride_vector rtn;
             return rtn = other;
         }
-        template <typename T>
-        static stride_vector strideify(vector<T>&& other)
-        {
-            stride_vector rtn;
-            return rtn = other;
-        }
         static stride_vector interleave(const vector<stride_vector*> &vecs);
-        static inline stride_vector interleave(vector<stride_vector*> &&vecs) { return interleave(vecs); };
     };
 }
 

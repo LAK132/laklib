@@ -39,12 +39,6 @@ namespace lak
         data = other.data;
     }
 
-    stride_vector::stride_vector(stride_vector &&other)
-    {
-        stride = other.stride;
-        data = other.data;
-    }
-
     void stride_vector::init(size_t size, size_t str)
     {
         stride = str;
@@ -52,13 +46,6 @@ namespace lak
     }
 
     stride_vector &stride_vector::operator=(const stride_vector &other)
-    {
-        stride = other.stride;
-        data = other.data;
-        return *this;
-    }
-
-    stride_vector &stride_vector::operator=(stride_vector &&other)
     {
         stride = other.stride;
         data = other.data;

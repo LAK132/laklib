@@ -176,7 +176,7 @@ namespace lak
             if (shader.use_count() > 0)
             for (auto &element : buffer.elements)
             {
-                auto &&attribute = shader->attributes.find(element.first);
+                const auto &attribute = shader->attributes.find(element.first);
                 if (attribute != shader->attributes.end())
                 {
                     if (element.second.active)

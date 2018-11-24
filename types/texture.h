@@ -68,7 +68,6 @@ namespace lak
             retype(NONE);
         }
         texparam_t(const texparam_t& other) { *this = other; }
-        texparam_t(texparam_t&& other) { *this = other; }
         texparam_t(GLenum pn, GLint val)
         {
             retype(INT);
@@ -100,7 +99,6 @@ namespace lak
             }
             return *this;
         }
-        texparam_t& operator=(texparam_t&& other) { return *this = other; }
         void apply(GLenum target)
         {
             switch(pname)
@@ -143,13 +141,6 @@ namespace lak
             glTexImage2D(ttype, level, cformat, img.w, img.h, border, glformat, gltype, &(img.pixels[0]));
     }
 
-    template <GLenum glformat, GLenum gltype>
-    void imageToTexture(GLenum ttype, GLint level, GLint cformat, GLint border, image_t<color_t<glformat, gltype>>&& img)
-    {
-        if(img.w > 0 && img.h > 0)
-            glTexImage2D(ttype, level, cformat, img.w, img.h, border, glformat, gltype, &(img.pixels[0]));
-    }
-
     struct texture_t
     {
     private:
@@ -172,21 +163,6 @@ namespace lak
             generate(ttype, level, cformat, border, img, prms);
         }
         template <GLenum glformat, GLenum gltype>
-        texture_t(GLenum ttype, GLint level, GLint cformat, GLint border, image_t<color_t<glformat, gltype>>&& img, const vector<texparam_t>& prms)
-        {
-            generate(ttype, level, cformat, border, img, prms);
-        }
-        template <GLenum glformat, GLenum gltype>
-        texture_t(GLenum ttype, GLint level, GLint cformat, GLint border, const image_t<color_t<glformat, gltype>>& img, vector<texparam_t>&& prms)
-        {
-            generate(ttype, level, cformat, border, img, prms);
-        }
-        template <GLenum glformat, GLenum gltype>
-        texture_t(GLenum ttype, GLint level, GLint cformat, GLint border, image_t<color_t<glformat, gltype>>&& img, vector<texparam_t>&& prms)
-        {
-            generate(ttype, level, cformat, border, img, prms);
-        }
-        template <GLenum glformat, GLenum gltype>
         void generate(GLenum ttype, GLint level, GLint cformat, GLint border, const image_t<color_t<glformat, gltype>>& img, const vector<texparam_t>& prms)
         {
             texType = ttype;
@@ -200,21 +176,6 @@ namespace lak
             }
             update();
             imageToTexture(texType, level, cformat, border, img);
-        }
-        template <GLenum glformat, GLenum gltype>
-        void generate(GLenum ttype, GLint level, GLint cformat, GLint border, image_t<color_t<glformat, gltype>>&& img, const vector<texparam_t>& prms)
-        {
-            generate(ttype, level, cformat, border, img, prms);
-        }
-        template <GLenum glformat, GLenum gltype>
-        void generate(GLenum ttype, GLint level, GLint cformat, GLint border, const image_t<color_t<glformat, gltype>>& img, vector<texparam_t>&& prms)
-        {
-            generate(ttype, level, cformat, border, img, prms);
-        }
-        template <GLenum glformat, GLenum gltype>
-        void generate(GLenum ttype, GLint level, GLint cformat, GLint border, image_t<color_t<glformat, gltype>>&& img, vector<texparam_t>&& prms)
-        {
-            generate(ttype, level, cformat, border, img, prms);
         }
         void bind()
         {
