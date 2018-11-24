@@ -56,9 +56,7 @@ using std::endl;
 // #define getNumberT(_type, _strm, _num)  {_type _d; _strm >> _d; _num = _d;}
 
 void readFile(const string& src, string* dst);
-void readFile(string&& src, string* dst);
 string readFile(const string& src);
-string readFile(string&& src);
 
 template<typename NUM, typename CHAR>
 std::remove_reference_t<NUM> getNumber(basic_istream<CHAR> &strm)

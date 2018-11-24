@@ -45,19 +45,7 @@ void readFile(const string &src, string *dst)
         *dst += c;
 }
 
-void readFile(string &&src, string *dst)
-{
-    readFile(src, dst);
-}
-
 string readFile(const string &src)
-{
-    string str;
-    readFile(src, &str);
-    return str;
-}
-
-string readFile(string &&src)
 {
     string str;
     readFile(src, &str);

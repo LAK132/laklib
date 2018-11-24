@@ -52,14 +52,10 @@ namespace lak
         vector<col_t> pixels;
         image_t(){}
         ~image_t(){}
-        void resize(size_t W, size_t H)
-        {
-            w = W;
-            h = H;
-            pixels.resize(w * h);
-        }
-        image_t(size_t W, size_t H) { resize(W, H); }
-        image_t(size_t W, size_t H, chan_t* pix)
+        image_t(const size_t &W, const vector<col_t> &pix) : pixels(pix), w(W), h(pix.size() / W) {}
+        image_t(const image_t<col_t> &other) : pixels(other.pixels), w(other.w), h(other.h) {}
+        image_t(const size_t &W, const size_t &H) { resize(W, H); }
+        image_t(const size_t &W, const size_t &H, chan_t *pix)
         {
             resize(W, H);
             for(size_t i = 0; i < w * h; i++)
@@ -110,26 +106,20 @@ namespace lak
                 }
             }
         }
-        image_t(size_t W, const vector<col_t>& pix)
-        {
-            pixels = pix;
-            resize(W, pix.size() / W); // resize AFTER copy
-        }
-        image_t(size_t W, vector<col_t>&& pix)
-        {
-            pixels = pix;
-            resize(W, pix.size() / W); // resize AFTER copy
-        }
-        image_t(const image_t<col_t>& other) { *this = other; }
-        image_t(image_t<col_t>&& other) { *this = other; }
-        image_t<col_t>& operator=(const image_t<col_t>& other)
+        image_t<col_t>& operator=(const image_t<col_t> &other)
         {
             pixels = other.pixels;
-            resize(other.w, other.h); // resize AFTER copy
+            w = other.w;
+            h = other.h;
             return *this;
         }
-        image_t<col_t>& operator=(image_t<col_t>&& other) { return *this = other; }
-        col_t* operator[](size_t y) { return &(pixels[y * w]); }
+        void resize(const size_t &W, const size_t &H)
+        {
+            w = W;
+            h = H;
+            pixels.resize(w * h);
+        }
+        col_t* operator[](const size_t &y) { return &(pixels[y * w]); }
     };
 
     using imageR8_t = image_t<colorR8_t>;

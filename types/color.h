@@ -86,15 +86,16 @@ namespace lak
     {
         using type_t = color<GL_RED, gltype, gl_color_1<gltype>>;
         using ctype_t = gl_color_t<gltype>;
-        ctype_t r = 0;
-        color() {}
-        color(ctype_t R) : r(R) {}
-        color(ctype_t *c) : r(c[0]) {}
-        color(type_t&& other) { *this = other; }
-        color(const type_t& other) { *this = other; }
-        type_t& operator=(ctype_t *c) { return *this = type_t(c); }
-        type_t& operator=(type_t&& other) { return *this = other; }
-        type_t& operator=(const type_t& other) {
+        ctype_t r;
+        color() : r(0) {}
+        color(const ctype_t *c) : r(c[0]) {}
+        color(const ctype_t &R) : r(R) {}
+        color(const type_t &other) : r(other.r) {}
+        type_t& operator=(const ctype_t *c) {
+            r = c[0];
+            return *this;
+        }
+        type_t& operator=(const type_t &other) {
             r = other.r;
             return *this;
         }
@@ -105,15 +106,17 @@ namespace lak
     {
         using type_t = color<GL_RG, gltype, gl_color_1<gltype>>;
         using ctype_t = gl_color_t<gltype>;
-        ctype_t r = 0; ctype_t g = 0;
-        color() {}
-        color(ctype_t R, ctype_t G) : r(R), g(G) {}
-        color(ctype_t *c) : r(c[0]), g(c[1]) {}
-        color(type_t&& other) { *this = other; }
-        color(const type_t& other) { *this = other; }
-        type_t& operator=(ctype_t *c) { return *this = type_t(c); }
-        type_t& operator=(type_t&& other) { return *this = other; }
-        type_t& operator=(const type_t& other) {
+        ctype_t r; ctype_t g;
+        color() : r(0), g(0) {}
+        color(const ctype_t *c) : r(c[0]), g(c[1]) {}
+        color(const ctype_t &R, const ctype_t &G) : r(R), g(G) {}
+        color(const type_t &other) : r(other.r), g(other.g) {}
+        type_t& operator=(const ctype_t *c) {
+            r = c[0];
+            g = c[1];
+            return *this;
+        }
+        type_t& operator=(const type_t &other) {
             r = other.r;
             g = other.g;
             return *this;
@@ -125,15 +128,18 @@ namespace lak
     {
         using type_t = color<GL_RGB, gltype, gl_color_1<gltype>>;
         using ctype_t = gl_color_t<gltype>;
-        ctype_t r = 0; ctype_t g = 0; ctype_t b = 0;
-        color() {}
-        color(ctype_t R, ctype_t G, ctype_t B) : r(R), g(G), b(B) {}
-        color(ctype_t *c) : r(c[0]), g(c[1]), b(c[2]) {}
-        color(type_t&& other) { *this = other; }
-        color(const type_t& other) { *this = other; }
-        type_t& operator=(ctype_t *c) { return *this = type_t(c); }
-        type_t& operator=(type_t&& other) { return *this = other; }
-        type_t& operator=(const type_t& other) {
+        ctype_t r; ctype_t g; ctype_t b;
+        color() : r(0), g(0), b(0) {}
+        color(const ctype_t *c) : r(c[0]), g(c[1]), b(c[2]) {}
+        color(const ctype_t &R, const ctype_t &G, const ctype_t &B) : r(R), g(G), b(B) {}
+        color(const type_t &other) : r(other.r), g(other.g), b(other.b) {}
+        type_t& operator=(const ctype_t *c) {
+            r = c[0];
+            g = c[1];
+            b = c[2];
+            return *this;
+        }
+        type_t& operator=(const type_t &other) {
             r = other.r;
             g = other.g;
             b = other.b;
@@ -146,18 +152,21 @@ namespace lak
     {
         using type_t = color<GL_BGR, gltype, gl_color_1<gltype>>;
         using ctype_t = gl_color_t<gltype>;
-        ctype_t b = 0; ctype_t g = 0; ctype_t r = 0;
-        color() {}
-        color(ctype_t B, ctype_t G, ctype_t R) : r(R), g(G), b(B) {}
-        color(ctype_t *c) : r(c[2]), g(c[1]), b(c[0]) {}
-        color(type_t&& other) { *this = other; }
-        color(const type_t& other) { *this = other; }
-        type_t& operator=(ctype_t *c) { return *this = type_t(c); }
-        type_t& operator=(type_t&& other) { return *this = other; }
-        type_t& operator=(const type_t& other) {
-            r = other.r;
-            g = other.g;
+        ctype_t b; ctype_t g; ctype_t r;
+        color() : b(0), g(0), r(0) {}
+        color(const ctype_t *c) : b(c[0]), g(c[1]), r(c[2]) {}
+        color(const ctype_t &B, const ctype_t &G, const ctype_t &R) : b(B), g(G), r(R) {}
+        color(const type_t &other) : b(other.b), g(other.g), r(other.r) {}
+        type_t& operator=(const ctype_t *c) {
+            b = c[0];
+            g = c[1];
+            r = c[2];
+            return *this;
+        }
+        type_t& operator=(const type_t &other) {
             b = other.b;
+            g = other.g;
+            r = other.r;
             return *this;
         }
     };
@@ -167,15 +176,19 @@ namespace lak
     {
         using type_t = color<GL_RGBA, gltype, gl_color_1<gltype>>;
         using ctype_t = gl_color_t<gltype>;
-        ctype_t r = 0; ctype_t g = 0; ctype_t b = 0; ctype_t a = 0;
-        color() {}
-        color(ctype_t R, ctype_t G, ctype_t B, ctype_t A) : r(R), g(G), b(B), a(A) {}
-        color(ctype_t *c) : r(c[0]), g(c[1]), b(c[2]), a(c[3]) {}
-        color(type_t&& other) { *this = other; }
-        color(const type_t& other) { *this = other; }
-        type_t& operator=(ctype_t *c) { return *this = type_t(c); }
-        type_t& operator=(type_t&& other) { return *this = other; }
-        type_t& operator=(const type_t& other) {
+        ctype_t r; ctype_t g; ctype_t b; ctype_t a;
+        color() : r(0), g(0), b(0), a(0) {}
+        color(const ctype_t *c) : r(c[0]), g(c[1]), b(c[2]), a(c[3]) {}
+        color(const ctype_t &R, const ctype_t &G, const ctype_t &B, const ctype_t &A) : r(R), g(G), b(B), a(A) {}
+        color(const type_t &other) : r(other.r), g(other.g), b(other.b), a(other.a) {}
+        type_t& operator=(const ctype_t *c) {
+            r = c[0];
+            g = c[1];
+            b = c[2];
+            a = c[3];
+            return *this;
+        }
+        type_t& operator=(const type_t &other) {
             r = other.r;
             g = other.g;
             b = other.b;
@@ -189,15 +202,19 @@ namespace lak
     {
         using type_t = color<GL_BGRA, gltype, gl_color_1<gltype>>;
         using ctype_t = gl_color_t<gltype>;
-        ctype_t b = 0; ctype_t g = 0; ctype_t r = 0; ctype_t a = 0;
-        color() {}
-        color(ctype_t B, ctype_t G, ctype_t R, ctype_t A) : r(R), g(G), b(B), a(A) {}
-        color(ctype_t *c) : r(c[2]), g(c[1]), b(c[0]), a(c[3]) {}
-        color(type_t&& other) { *this = other; }
-        color(const type_t& other) { *this = other; }
-        type_t& operator=(ctype_t *c) { return *this = type_t(c); }
-        type_t& operator=(type_t&& other) { return *this = other; }
-        type_t& operator=(const type_t& other) {
+        ctype_t b; ctype_t g; ctype_t r; ctype_t a;
+        color() : b(0), g(0), r(0), a(0) {}
+        color(const ctype_t *c) : b(c[0]), g(c[1]), r(c[2]), a(c[3]) {}
+        color(const ctype_t &B, const ctype_t &G, const ctype_t &R, const ctype_t &A) : b(B), g(G), r(R), a(A) {}
+        color(const type_t &other) : b(other.b), g(other.g), r(other.r), a(other.a) {}
+        type_t& operator=(const ctype_t *c) {
+            b = c[0];
+            g = c[1];
+            r = c[2];
+            a = c[3];
+            return *this;
+        }
+        type_t& operator=(const type_t &other) {
             r = other.r;
             g = other.g;
             b = other.b;
@@ -213,15 +230,16 @@ namespace lak
     {
         using type_t = color<GL_RGB, gltype, gl_color_3<gltype>>;
         using ctype_t = gl_color_t<gltype>;
-        ctype_t rgb = 0;
-        color() {}
-        color(ctype_t RGB) : rgb(RGB) {}
-        color(ctype_t *c) : rgb(c[0]) {}
-        color(type_t&& other) { *this = other; }
-        color(const type_t& other) { *this = other; }
-        type_t& operator=(ctype_t *c) { return *this = type_t(c); }
-        type_t& operator=(type_t&& other) { return *this = other; }
-        type_t& operator=(const type_t& other) {
+        ctype_t rgb;
+        color() : rgb(0) {}
+        color(const ctype_t *c) : rgb(c[0]) {}
+        color(const ctype_t &RGB) : rgb(RGB) {}
+        color(const type_t &other) : rgb(other.rgb) {}
+        type_t& operator=(const ctype_t *c) {
+            rgb = c[0];
+            return *this;
+        }
+        type_t& operator=(const type_t &other) {
             rgb = other.rgb;
             return *this;
         }
@@ -236,15 +254,16 @@ namespace lak
     {
         using type_t = color<GL_RGBA, gltype, gl_color_4<gltype>>;
         using ctype_t = gl_color_t<gltype>;
-        ctype_t rgba = 0;
-        color() {}
-        color(ctype_t RGBA) : rgba(RGBA) {}
-        color(ctype_t *c) : rgba(c[0]) {}
-        color(type_t&& other) { *this = other; }
-        color(const type_t& other) { *this = other; }
-        type_t& operator=(ctype_t *c) { return *this = type_t(c); }
-        type_t& operator=(type_t&& other) { return *this = other; }
-        type_t& operator=(const type_t& other) {
+        ctype_t rgba;
+        color() : rgba(0) {}
+        color(const ctype_t *c) : rgba(c[0]) {}
+        color(const ctype_t &RGBA = 0) : rgba(RGBA) {}
+        color(const type_t &other) : rgba(other.rgba) {}
+        type_t& operator=(const ctype_t *c) {
+            rgba = c[0];
+            return *this;
+        }
+        type_t& operator=(const type_t &other) {
             rgba = other.rgba;
             return *this;
         }
@@ -259,15 +278,16 @@ namespace lak
     {
         using type_t = color<GL_BGRA, gltype, gl_color_4<gltype>>;
         using ctype_t = gl_color_t<gltype>;
-        ctype_t bgra = 0;
-        color() {}
-        color(ctype_t BGRA) : bgra(BGRA) {}
-        color(ctype_t *c) : bgra(c[0]) {}
-        color(type_t&& other) { *this = other; }
-        color(const type_t& other) { *this = other; }
-        type_t& operator=(ctype_t *c) { return *this = type_t(c); }
-        type_t& operator=(type_t&& other) { return *this = other; }
-        type_t& operator=(const type_t& other) {
+        ctype_t bgra;
+        color() : brga(0) {}
+        color(const ctype_t *c) : bgra(c[0]) {}
+        color(const ctype_t &BGRA = 0) : bgra(BGRA) {}
+        color(const type_t &other) : brga(other.brga) {}
+        type_t& operator=(const ctype_t *c) {
+            bgra = c[0];
+            return *this;
+        }
+        type_t& operator=(const type_t &other) {
             bgra = other.bgra;
             return *this;
         }

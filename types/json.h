@@ -65,7 +65,7 @@ namespace lak
     {
         unordered_map<KEY, SIZE> keys;
         vector<VALUE> values;
-        VALUE &operator[](const KEY key)
+        VALUE &operator[](const KEY &key)
         {
             const auto &it = keys.find(key);
             if (it != keys.end())
@@ -79,12 +79,12 @@ namespace lak
                 return values[keys[key]];
             }
         }
-        inline const VALUE &operator[](const KEY key) const
+        inline const VALUE &operator[](const KEY &key) const
         {
             return values[keys.at(key)];
         }
         inline void clear() { keys.clear(); values.clear(); }
-        void erase(const KEY key)
+        void erase(const KEY &key)
         {
             const auto &it = keys.find(key);
             if (it != keys.end())
@@ -167,13 +167,9 @@ namespace lak
         ~json_t() {}
 
         inline json_t &operator[](const string &key)    { return get_checked<object_t>(value)[key]; }
-        inline json_t &operator[](string &&key)         { return get_checked<object_t>(value)[key]; }
         inline json_t &operator[](const size_t &index)  { return get_checked<array_t>(value)[index]; }
-        inline json_t &operator[](size_t &&index)       { return get_checked<array_t>(value)[index]; }
         inline const json_t &operator[](const string &key) const    { return get_checked<object_t>(value)[key]; }
-        inline const json_t &operator[](string &&key) const         { return get_checked<object_t>(value)[key]; }
         inline const json_t &operator[](const size_t &index) const  { return get_checked<array_t>(value)[index]; }
-        inline const json_t &operator[](size_t &&index) const       { return get_checked<array_t>(value)[index]; }
 
         template<typename T>
         json_t(const T &rhs)
@@ -198,7 +194,6 @@ namespace lak
                 // assert(false);
             }
         }
-        template<typename T, typename = enable_if_t<is_same_v<remove_reference_t<T>, T>>> json_t(T &&rhs) : json_t(rhs) {}
 
         template<typename T>
         json_t &operator=(const T &rhs)
@@ -224,7 +219,6 @@ namespace lak
             }
             return *this;
         }
-        template<typename T> inline enable_if_t<is_same_v<remove_reference_t<T>, T>, json_t> &operator=(T &&rhs) { return *this = rhs; }
 
         template<typename T>
         explicit inline operator T&()
@@ -365,11 +359,6 @@ namespace lak
         return os;
     }
     template<template<typename, typename> typename OBJ, template<typename> typename VEC, typename STR, typename NUM, typename BOOL, typename NUL>
-    ostream& operator<<(ostream& os, lak::json_t<OBJ, VEC, STR, NUM, BOOL, NUL> &&json)
-    {
-        os << json;
-    }
-    template<template<typename, typename> typename OBJ, template<typename> typename VEC, typename STR, typename NUM, typename BOOL, typename NUL>
     istream& operator>>(istream& is, lak::json_t<OBJ, VEC, STR, NUM, BOOL, NUL> &json)
     {
         using namespace lak;
@@ -457,7 +446,7 @@ namespace lak
 
     static JSON operator "" _JSON(const char* str, const size_t size)
     {
-        const string s = str;
+        const string &s = string{str};
         stringstream strm(str);
         JSON json{};
         strm >> json;

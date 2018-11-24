@@ -70,7 +70,6 @@ namespace lak
         bool init();
         // add shader code to this program
         bool attachShader(const string &code, GLenum type, string *error = nullptr);
-        bool attachShader(string &&code, GLenum type, string *error = nullptr);
         // links the program with OpenGL and then initialise attributes and uniforms
         bool link(string *error = nullptr);
         // checks if successfully linked

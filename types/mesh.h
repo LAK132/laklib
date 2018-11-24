@@ -65,8 +65,6 @@ namespace lak
         // stringable functions to initalise vertex element
         template<typename T> inline vertexElement_t& setData(GLenum t, GLint s, const T &d)
         { dirty = true; type = t; size = s; data = d; return *this; }
-        template<typename T> inline vertexElement_t& setData(GLenum t, GLint s, T &&d)
-        { dirty = true; type = t; size = s; data = d; return *this; }
         inline vertexElement_t& setDivisor(GLuint d) { divisor = d; return *this; }
         inline vertexElement_t& setNormalised(bool n) { normalised = n; return *this; }
         inline vertexElement_t& setActive(bool n) { active = n; return *this; }

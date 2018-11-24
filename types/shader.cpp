@@ -38,11 +38,6 @@ namespace lak
         return program != 0;
     }
 
-    bool shaderProgram_t::attachShader(string &&code, GLenum type, string *error)
-    {
-        return attachShader(code, type, error);
-    }
-
     bool shaderProgram_t::attachShader(const string &code, GLenum type, string *error)
     {
         GLuint shader = glCreateShader(type);
