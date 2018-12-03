@@ -25,6 +25,10 @@ SOFTWARE.
 #include <memory>
 #include <mutex>
 
+#ifndef LAK_QUEUE_NO_DEFINES
+#define withQueue(queue, ticket) if (lak::ticket_t ticket = queue.lock(); ticket)
+#endif // LAK_QUEUE_NO_DEFINES
+
 #ifndef LAK_QUEUE_H
 #define LAK_QUEUE_H
 
@@ -50,7 +54,8 @@ namespace lak
         friend queue_t;
     };
 
-    typedef shared_ptr<_ticket> ticket_t;
+    using ticket_t = shared_ptr<_ticket>;
+    using weak_ticket_t = weak_ptr<_ticket>;
 
     struct queue_t
     {
