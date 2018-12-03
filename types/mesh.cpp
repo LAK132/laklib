@@ -93,7 +93,7 @@ namespace lak
 
             if (size && interlaced.size() == size)
             {
-                glBufferSubData(GL_ARRAY_BUFFER, NULL, size, &interlaced.data[0]);
+                glBufferSubData(GL_ARRAY_BUFFER, 0, size, &interlaced.data[0]);
             }
             else
             {
@@ -108,7 +108,7 @@ namespace lak
                 LDEBUG("Interlaced Size: " << interlaced.size());
             }
             decltype(interlaced.data) check; check.resize(size);
-            glGetBufferSubData(GL_ARRAY_BUFFER, NULL, size, &check[0]);
+            glGetBufferSubData(GL_ARRAY_BUFFER, 0, size, &check[0]);
             if (check != interlaced.data)
             {
                 LDEBUG("Check size: " << check.size());
@@ -207,7 +207,7 @@ namespace lak
 
             #ifdef LTEST
             vector<GLuint> check; check.resize(indexCount);
-            glGetBufferSubData(GL_ELEMENT_ARRAY_BUFFER, NULL, indexCount * sizeof(GLuint), &check[0]);
+            glGetBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, indexCount * sizeof(GLuint), &check[0]);
             LASSERT(check == index, "Incorrect index buffer data");
             #endif // LTEST
         }

@@ -105,7 +105,7 @@ namespace lak
                 case GL_FLOAT_MAT2: attribute.type = GL_FLOAT; attribute.size = size * 4; break;
                 case GL_FLOAT_MAT3: attribute.type = GL_FLOAT; attribute.size = size * 9; break;
                 case GL_FLOAT_MAT4: attribute.type = GL_FLOAT; attribute.size = size * 16; break;
-                default: attribute.type = NULL; attribute.size = NULL; break;
+                default: attribute.type = 0; attribute.size = 0; break;
             }
             attribute.position = glGetAttribLocation(program, &name[0]);
             attribute.name = &name[0];
