@@ -279,10 +279,10 @@ namespace lak
         using type_t = color<GL_BGRA, gltype, gl_color_4<gltype>>;
         using ctype_t = gl_color_t<gltype>;
         ctype_t bgra;
-        color() : brga(0) {}
+        color() : bgra(0) {}
         color(const ctype_t *c) : bgra(c[0]) {}
         color(const ctype_t &BGRA = 0) : bgra(BGRA) {}
-        color(const type_t &other) : brga(other.brga) {}
+        color(const type_t &other) : bgra(other.bgra) {}
         type_t& operator=(const ctype_t *c) {
             bgra = c[0];
             return *this;
