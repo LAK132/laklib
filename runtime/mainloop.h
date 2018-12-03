@@ -22,147 +22,71 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#include <cmath>
 #include <vector>
 #include <string>
-
-#ifndef LAK_NO_SDL
-#define LAK_USE_SDL
-#endif
-
-#ifndef LAK_NO_MULTITHREAD
-#define LAK_USE_MULTITHREAD
-#endif
-
-#ifdef LAK_USE_SDL
-#define SDL_MAIN_HANDLED
-#include <SDL.h>
-#endif // LAK_USE_SDL
-
-#ifdef LAK_USE_MULTITHREAD
-#include <thread>
+#include <assert.h>
 #include <atomic>
-#include <mutex>
-#include "types/queue.h"
-#endif // LAK_USE_MULTITHREAD
+#include <thread>
+#include <memory>
 
-#include <glm/vec2.hpp>
+#include "types/queue.h"
 
 #ifndef LAK_MAINLOOP_H
 #define LAK_MAINLOOP_H
 
 struct userData_t; // must be defined in user code
 
+void update(std::atomic_bool *const running, userData_t *const data);
+void draw(std::atomic_bool *const running, userData_t *const data);
+
 namespace lak
 {
     using std::vector;
-    #ifdef LAK_USE_MULTITHREAD
-    using std::thread;
     using std::atomic;
     using std::atomic_bool;
-    using std::mutex;
-    using lak::queue_t;
-    using lak::ticket_t;
-    #endif // LAK_MAIN_MULTITHREAD
+    using std::thread;
+    using std::shared_ptr;
+    using std::make_shared;
 
-    struct screen_t
+    extern queue_t update_thread_lock;
+    static void update_loop(atomic_bool *const running, userData_t *const data)
     {
-        // pixel count
-        size_t w;
-        size_t h;
-        // screen size
-        float x;
-        float y;
-    };
+        assert(running && data);
+        while (running && *running)
+        {
+            assert(data);
+            withQueue(update_thread_lock, tl)
+            {
+                update(running, data);
+            }
+            std::this_thread::yield();
+        }
+    }
 
-    struct mouse_t
+    static shared_ptr<thread> update_thread(atomic_bool *const running, userData_t *const data)
     {
-        glm::vec2 pos = {0.0f, 0.0f};    // x, y position of mouse on screen
-        glm::vec2 delta = {0.0f, 0.0f};  // x, y delta of mouse position
-        glm::ivec2 wheel = {0, 0};  // x, y delta of scroll wheel
-        bool inUse = false;         // useful for mouse use scoping
-        bool left = false;
-        bool leftClicked = false;
-        bool right = false;
-        bool rightClicked = false;
-        bool middle = false;
-        bool middleClicked = false;
-    };
+        return make_shared<thread>(update_loop, running, data);
+    }
 
-    struct keyboard_t
+    static void draw_loop(atomic_bool *const running, userData_t *const data)
     {
-        bool inUse = false;         // useful for keyboard use scoping
+        assert(running && data);
+        while (running && *running)
+        {
+            assert(data);
+            withQueue(update_thread_lock, tl)
+            {
+                draw(running, data);
+            }
+            std::this_thread::yield();
+        }
+    }
 
-        std::string text = "";
-
-        bool shift = false;
-        bool alt = false;
-        bool ctrl = false;
-
-        bool capslock = false;
-        bool numlock = false;
-
-        bool tab = false;
-        bool backspace = false;
-        bool del = false;
-
-        bool left = false;
-        bool right = false;
-        bool up = false;
-        bool down = false;
-
-        bool keys[0xFF] = {0};
-        bool keysOnce[0xFF] = {0};
-    };
-
-    struct threadData_t
+    static shared_ptr<thread> draw_thread(atomic_bool *const running, userData_t *const data)
     {
-        bool wantContext = false;
-        bool haveContext = false;
-    };
-
-    extern thread_local threadData_t threadData;
-
-    struct loopData_t
-    {
-        #ifdef LAK_USE_MULTITHREAD
-        queue_t contextQueue;
-        queue_t drawQueue;
-        atomic_bool running = true;
-        #ifdef LAK_USE_SDL
-        queue_t updateQueue;
-        #endif // LAK_USE_SDL
-        #else
-        bool running = true;
-        #endif // LAK_USE_MULTITHREAD
-
-        #ifdef LAK_USE_SDL
-        SDL_Window* window;
-        SDL_GLContext context;
-        vector<SDL_Event> events;
-        #endif // LAK_USE_SDL
-
-        double targetDrawTime = 1.0/60.0;
-        uint64_t drawTime = 0;
-        double drawDelta = 0.0;
-        uint64_t updateTime = 0;
-        double updateDelta = 0.0;
-
-        screen_t screen;
-        mouse_t mouse;
-        keyboard_t keyboard;
-
-        userData_t* userData;
-    };
+        return make_shared<thread>(draw_loop, running, data);
+    }
 }
-
-void init(lak::loopData_t &loop_data);
-void update(lak::loopData_t &loop_data);
-void draw(lak::loopData_t &loop_data);
-void shutdown(lak::loopData_t &loop_data);
-#ifdef LAK_USE_SDL
-void event(lak::loopData_t &loop_data);
-#endif // LAK_USE_SDL
 
 #ifdef LAK_MAINLOOP_IMPLEM
 #   ifndef LAK_MAINLOOP_HAS_IMPLEM

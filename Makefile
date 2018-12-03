@@ -29,8 +29,8 @@ lak_types_INC = $(lak_SRC)
 lak_types_DEP = lak lak_utils sdl glm opengl
 
 lak_runtime_SRC = $(lak_SRC)/runtime
-lak_runtime_OBJ = mainloop.cpp
-lak_runtime_HDR = mainloop.h
+lak_runtime_OBJ = mainloop.cpp window.cpp
+lak_runtime_HDR = mainloop.h window.h
 lak_runtime_INC = $(lak_SRC)
 lak_runtime_DEP = lak lak_types lak_utils glm sdl opengl
 
