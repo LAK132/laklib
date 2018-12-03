@@ -24,10 +24,6 @@ SOFTWARE.
 
 #include "types/mesh.h"
 
-#ifdef LTEST
-#include "runtime/mainloop.h"
-#endif // LTEST
-
 namespace lak
 {
     //
@@ -39,10 +35,6 @@ namespace lak
 
     void vertexBuffer_t::bind()
     {
-        #ifdef LTEST
-        LASSERT(threadData.haveContext, "Bind will fail, this thread doesn't have OpenGL context");
-        #endif // LTEST
-
         if (!init)
         {
             glGenBuffers(1, &buffer);
