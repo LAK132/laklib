@@ -23,7 +23,7 @@ SOFTWARE.
 */
 
 #include <stdint.h>
-#include <unordered_map>
+#include <map>
 #include <vector>
 #include <string>
 #include <iostream>
@@ -45,7 +45,7 @@ SOFTWARE.
 
 namespace lak
 {
-    using std::unordered_map;
+    using std::map;
     using std::vector;
     using std::string;
     using std::istream;
@@ -59,41 +59,6 @@ namespace lak
     using std::is_same_v;
     using std::remove_reference_t;
     using std::enable_if_t;
-
-    template<typename KEY, typename VALUE, typename SIZE = size_t>
-    struct _object_t
-    {
-        unordered_map<KEY, SIZE> keys;
-        vector<VALUE> values;
-        VALUE &operator[](const KEY &key)
-        {
-            const auto &it = keys.find(key);
-            if (it != keys.end())
-            {
-                return values[it->second];
-            }
-            else
-            {
-                keys[key] = values.size();
-                values.resize(values.size() + 1);
-                return values[keys[key]];
-            }
-        }
-        inline const VALUE &operator[](const KEY &key) const
-        {
-            return values[keys.at(key)];
-        }
-        inline void clear() { keys.clear(); values.clear(); }
-        void erase(const KEY &key)
-        {
-            const auto &it = keys.find(key);
-            if (it != keys.end())
-            {
-                values.erase(values.begin() + it->second);
-                keys.erase(it);
-            }
-        }
-    };
 
     template<typename T, typename ...V>
     inline T &get_checked(variant<V...> &value)
@@ -163,8 +128,8 @@ namespace lak
             }
         }
 
-        json_t() : value(object_t{}) {}
-        ~json_t() {}
+        json_t();
+        ~json_t();
 
         inline json_t &operator[](const string &key)    { return get_checked<object_t>(value)[key]; }
         inline json_t &operator[](const size_t &index)  { return get_checked<array_t>(value)[index]; }
@@ -249,6 +214,12 @@ namespace lak
         template<typename T> explicit inline operator T() const { return (remove_reference_t<T>&)*this; }
     };
 
+    template<template<typename, typename> typename OBJECT, template<typename> typename ARRAY, typename ...STRINGS, typename ...NUMBERS, typename BOOLEAN, typename NULLT>
+    json_t<OBJECT, ARRAY, variant<STRINGS...>, variant<NUMBERS...>, BOOLEAN, NULLT>::json_t() : value(json_t::object_t{}) {}
+
+    template<template<typename, typename> typename OBJECT, template<typename> typename ARRAY, typename ...STRINGS, typename ...NUMBERS, typename BOOLEAN, typename NULLT>
+    json_t<OBJECT, ARRAY, variant<STRINGS...>, variant<NUMBERS...>, BOOLEAN, NULLT>::~json_t() {}
+
     using _number_t = variant<
         double, float, // long double,
         uint64_t, int64_t,
@@ -259,7 +230,7 @@ namespace lak
 
     using _string_t = variant<string>;
 
-    using JSON = json_t<_object_t, vector, _string_t, _number_t, bool, nullptr_t>;
+    using JSON = json_t<map, vector, _string_t, _number_t, bool, nullptr_t>;
 
     template<template<typename, typename> typename OBJ, template<typename> typename VEC, typename STR, typename NUM, typename BOOL, typename NUL>
     ostream& operator<<(ostream& os, const lak::json_t<OBJ, VEC, STR, NUM, BOOL, NUL> &json)
