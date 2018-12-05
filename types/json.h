@@ -136,6 +136,29 @@ namespace lak
         inline const json_t &operator[](const string &key) const    { return get_checked<object_t>(value)[key]; }
         inline const json_t &operator[](const size_t &index) const  { return get_checked<array_t>(value)[index]; }
 
+        inline json_t *operator()(const string &key)
+        {
+            object_t &obj = get_checked<object_t>(value);
+            auto &&it = obj.find(key);
+            return it != obj.end() ? &(it->second) : nullptr;
+        }
+        inline json_t *operator()(const size_t &index)
+        {
+            array_t &arr = get_checked<array_t>(value);
+            return index < arr.size() ? &(arr[index]) : nullptr;
+        }
+        inline const json_t *operator()(const string &key) const
+        {
+            const object_t &obj = get_checked<object_t>(value);
+            const auto &it = obj.find(key);
+            return it != obj.end() ? &(it->second) : nullptr;
+        }
+        inline const json_t *operator()(const size_t &index) const
+        {
+            const array_t &arr = get_checked<array_t>(value);
+            return index < arr.size() ? &(arr[index]) : nullptr;
+        }
+
         template<typename T>
         json_t(const T &rhs)
         {
