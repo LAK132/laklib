@@ -88,12 +88,12 @@ namespace lak
     template<template<typename, typename> typename OBJECT, template<typename> typename ARRAY, typename ...STRINGS, typename ...NUMBERS, typename BOOLEAN, typename NULLT>
     struct json_t<OBJECT, ARRAY, variant<STRINGS...>, variant<NUMBERS...>, BOOLEAN, NULLT>
     {
-        using string_t = variant<STRINGS...>;       // variant<string, ...>
-        using number_t = variant<NUMBERS...>;       // variant<double, float, int, ...>
+        using string_t = variant<STRINGS...>;       // std::variant<std::string, ...>
+        using number_t = variant<NUMBERS...>;       // std::variant<double, float, int, ...>
         using boolean_t = BOOLEAN;                  // bool
         using null_t = NULLT;                       // nullptr_t
-        using object_t = OBJECT<string, json_t>;    // unordered_map like
-        using array_t = ARRAY<json_t>;              // vector like
+        using object_t = OBJECT<string, json_t>;    // std::map like
+        using array_t = ARRAY<json_t>;              // std::vector like
         using value_t = variant<object_t, array_t, string_t, number_t, boolean_t, null_t>;
 
         value_t value;
