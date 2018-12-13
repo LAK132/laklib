@@ -46,6 +46,7 @@ SOFTWARE.
 namespace lak
 {
     using std::map;
+    using std::unordered_map;
     using std::vector;
     using std::string;
     using std::istream;
@@ -55,7 +56,6 @@ namespace lak
     using std::holds_alternative;
     using std::get;
     using std::disjunction_v;
-    using std::is_same;
     using std::is_same_v;
     using std::remove_reference_t;
     using std::enable_if_t;
@@ -99,7 +99,7 @@ namespace lak
         value_t value;
 
         template<typename T>
-        inline bool holds()
+        inline bool holds() const
         {
             switch (value.index())
             {
@@ -128,35 +128,157 @@ namespace lak
             }
         }
 
+        template<typename T>
+        static constexpr bool might_hold =
+            disjunction_v<is_same<remove_reference_t<T>, NUMBERS>...> ||
+            disjunction_v<is_same<remove_reference_t<T>, STRINGS>...> ||
+            disjunction_v<
+                is_same<remove_reference_t<T>, object_t>,
+                is_same<remove_reference_t<T>, array_t>,
+                is_same<remove_reference_t<T>, string_t>,
+                is_same<remove_reference_t<T>, number_t>,
+                is_same<remove_reference_t<T>, boolean_t>,
+                is_same<remove_reference_t<T>, null_t>
+            >;
+
+        template<typename T>
+        inline bool holds_close() const
+        {
+            switch (value.index())
+            {
+                case get_index_v<number_t, value_t>:
+                    return disjunction_v<is_same<remove_reference_t<T>, NUMBERS>...>;
+                break;
+                case get_index_v<string_t, value_t>:
+                    return disjunction_v<is_same<remove_reference_t<T>, STRINGS>...>;
+                break;
+                default:
+                    return disjunction_v<
+                        is_same<remove_reference_t<T>, object_t>,
+                        is_same<remove_reference_t<T>, array_t>,
+                        is_same<remove_reference_t<T>, string_t>,
+                        is_same<remove_reference_t<T>, number_t>,
+                        is_same<remove_reference_t<T>, boolean_t>,
+                        is_same<remove_reference_t<T>, null_t>>;
+                break;
+            }
+        }
+
         json_t();
         ~json_t();
 
+        // subscript notation for object (string index) and array (number index) types
         inline json_t &operator[](const string &key)    { return get_checked<object_t>(value)[key]; }
         inline json_t &operator[](const size_t &index)  { return get_checked<array_t>(value)[index]; }
         inline const json_t &operator[](const string &key) const    { return get_checked<object_t>(value)[key]; }
         inline const json_t &operator[](const size_t &index) const  { return get_checked<array_t>(value)[index]; }
 
+        // subscript notation for object and array types, but returns nullptr if index doesn't exist
         inline json_t *operator()(const string &key)
         {
+            if (!holds<object_t>())
+                return nullptr;
             object_t &obj = get_checked<object_t>(value);
             auto &&it = obj.find(key);
             return it != obj.end() ? &(it->second) : nullptr;
         }
         inline json_t *operator()(const size_t &index)
         {
+            if (!holds<array_t>())
+                return nullptr;
             array_t &arr = get_checked<array_t>(value);
             return index < arr.size() ? &(arr[index]) : nullptr;
         }
         inline const json_t *operator()(const string &key) const
         {
+            if (!holds<object_t>())
+                return nullptr;
             const object_t &obj = get_checked<object_t>(value);
             const auto &it = obj.find(key);
             return it != obj.end() ? &(it->second) : nullptr;
         }
         inline const json_t *operator()(const size_t &index) const
         {
+            if (!holds<array_t>())
+                return nullptr;
             const array_t &arr = get_checked<array_t>(value);
             return index < arr.size() ? &(arr[index]) : nullptr;
+        }
+
+        // type-safe copy from index into val, val not touched if incorrect type or non-existent index
+        template<typename KEY, typename T>
+        inline enable_if_t<is_same_v<KEY, string> || is_same_v<KEY, size_t>,
+        bool> operator()(const KEY &key, T &val) const
+        {
+            bool rtn = false;
+            if (const json_t *obj = (*this)(key); obj)
+            {
+                // we use `if constexpr` here to avoid compiler errors from
+                // bad syntax and/or function calls by checking if T is one
+                // of the *possible* types for obj. the inner `obj->holds` then
+                // checks the actual type at runtime
+                if constexpr (is_template<vector, T>)
+                {
+                    if (obj->holds<array_t>())
+                    {
+                        val.clear();
+                        rtn = true;
+                        // val is an array type
+                        const array_t &array = (const array_t&)*obj;
+                        for (const json_t &a : array)
+                        {
+                            if (a.holds<typename T::value_type>())
+                            {
+                                if constexpr (might_hold<typename T::value_type>)
+                                {
+                                    val.push_back((const typename T::value_type&)a);
+                                }
+                                else
+                                {
+                                    val.emplace_back();
+                                    val.back() = a;
+                                }
+                            }
+                        }
+                    }
+                }
+                else if constexpr (is_template<map, T> || is_template<unordered_map, T>)
+                {
+                    if (obj->holds<object_t>())
+                    {
+                        val.clear();
+                        rtn = true;
+                        // val is an object type
+                        const object_t &object = (const object_t&)*obj;
+                        for (const auto &[k, o] : object)
+                        {
+                            if (((const json_t&)o).holds<typename T::mapped_type>())
+                            {
+                                if constexpr (might_hold<typename T::mapped_type>)
+                                {
+                                    val[k] = (const typename T::mapped_type&)o;
+                                }
+                                else
+                                {
+                                    val[k] = o;
+                                }
+                            }
+                        }
+                    }
+                }
+                else if constexpr (might_hold<T>)
+                {
+                    if (obj->holds<T>())
+                        val = (const T&)*obj; rtn = true;
+                }
+                else
+                {
+                    // T might have a `bool operator=(json)` function
+                    // if not, this will probably throw a compiler error
+                    rtn = (val = *obj);
+                }
+            }
+            return rtn;
         }
 
         template<typename T>
@@ -210,6 +332,32 @@ namespace lak
 
         template<typename T>
         explicit inline operator T&()
+        {
+            if constexpr (is_same_v<remove_reference_t<T>, json_t>)
+                return *this;
+            else if constexpr (is_same_v<remove_reference_t<T>, value_t>)
+                return value;
+            else if constexpr (is_same_v<remove_reference_t<T>, object_t>)
+                return get_checked<object_t>(value);
+            else if constexpr (is_same_v<remove_reference_t<T>, array_t>)
+                return get_checked<array_t>(value);
+            else if constexpr (is_same_v<remove_reference_t<T>, string_t>)
+                return get_checked<string_t>(value);
+            else if constexpr (is_same_v<remove_reference_t<T>, number_t>)
+                return get_checked<number_t>(value);
+            else if constexpr (is_same_v<remove_reference_t<T>, boolean_t>)
+                return get_checked<boolean_t>(value);
+            else if constexpr (is_same_v<remove_reference_t<T>, null_t>)
+                return get_checked<null_t>(value);
+            else if constexpr (disjunction_v<is_same<remove_reference_t<T>, NUMBERS>...>)
+                return get_checked<remove_reference_t<T>>(get_checked<number_t>(value));
+            else if constexpr (disjunction_v<is_same<remove_reference_t<T>, STRINGS>...>)
+                return get_checked<remove_reference_t<T>>(get_checked<string_t>(value));
+            else static_assert(always_false_v<T>, "Bad type");
+        }
+
+        template<typename T>
+        explicit inline operator const T&() const
         {
             if constexpr (is_same_v<remove_reference_t<T>, json_t>)
                 return *this;

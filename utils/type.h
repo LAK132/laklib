@@ -24,6 +24,7 @@ SOFTWARE.
 
 #include <utility>
 #include <type_traits>
+#include <vector>
 
 #ifndef LAK_TYPE_UTIL_H
 #define LAK_TYPE_UTIL_H
@@ -89,6 +90,19 @@ namespace lak
     };
     template<typename L, typename R>
     static constexpr bool has_rhs_mult = _has_rhs_mult<L, R>::value;
+
+    template<template<typename...> typename T, typename U, typename V = void>
+    struct _is_template
+    {
+        static constexpr bool value = false;
+    };
+    template<template<typename...> typename T, typename ...U>
+    struct _is_template<T, T<U...>>
+    {
+        static constexpr bool value = true;
+    };
+    template<template<typename...> typename T, typename U>
+    static constexpr bool is_template = _is_template<T, U>::value;
 }
 
 #endif // LAK_TYPE_UTIL_H
