@@ -342,6 +342,48 @@ namespace lak
         }
 
         template<typename T>
+        inline json_t &operator=(const vector<T> &rhs)
+        {
+            value = array_t{};
+            as<array_t>().reserve(rhs.size());
+            for (const T &t : rhs)
+                as<array_t>().emplace_back(t);
+            return *this;
+        }
+
+        template<typename S, typename T>
+        inline json_t &operator=(const map<S, T> &rhs)
+        {
+            value = object_t{};
+            for (const auto &[k, v] : rhs)
+                as<object_t>()[(objkey_t)k] = v;
+            return *this;
+        }
+
+        template<typename S, typename T>
+        inline json_t &operator=(const unordered_map<S, T> &rhs)
+        {
+            value = object_t{};
+            for (const auto &[k, v] : rhs)
+                as<object_t>()[(objkey_t)k] = v;
+            return *this;
+        }
+
+        template<typename T>
+        inline enable_if_t<disjunction_v<
+            is_same<remove_reference_t<T>, object_t>,
+            is_same<remove_reference_t<T>, array_t>,
+            is_same<remove_reference_t<T>, string_t>,
+            is_same<remove_reference_t<T>, number_t>,
+            is_same<remove_reference_t<T>, boolean_t>,
+            is_same<remove_reference_t<T>, null_t>>,
+        json_t> &operator<<(const T &rhs)
+        {
+            value = rhs;
+            return *this;
+        }
+
+        template<typename T>
         inline T& as()
         {
             if constexpr (is_same_v<remove_reference_t<T>, json_t>)
