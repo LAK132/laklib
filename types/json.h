@@ -327,7 +327,7 @@ namespace lak
         }
 
         template<typename T>
-        explicit inline operator T&()
+        inline T& as()
         {
             if constexpr (is_same_v<remove_reference_t<T>, json_t>)
                 return *this;
@@ -353,7 +353,7 @@ namespace lak
         }
 
         template<typename T>
-        explicit inline operator const T&() const
+        inline const T& as_const () const
         {
             if constexpr (is_same_v<remove_reference_t<T>, json_t>)
                 return *this;
@@ -378,7 +378,9 @@ namespace lak
             else static_assert(always_false_v<T>, "Bad type");
         }
 
-        template<typename T> explicit inline operator T() const { return (remove_reference_t<T>&)*this; }
+        template<typename T> explicit inline operator T&() { return as<T>(); }
+        template<typename T> explicit inline operator const T&() const { return as_const<T>(); }
+        template<typename T> explicit inline operator T() const { return as_const<T>(); }
     };
 
     template<template<typename, typename> typename OBJECT, template<typename> typename ARRAY, typename ...STRINGS, typename ...NUMBERS, typename BOOLEAN, typename NULLT>
