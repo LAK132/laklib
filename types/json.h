@@ -389,17 +389,8 @@ namespace lak
     template<template<typename, typename> typename OBJECT, template<typename> typename ARRAY, typename ...STRINGS, typename ...NUMBERS, typename BOOLEAN, typename NULLT>
     json_t<OBJECT, ARRAY, variant<STRINGS...>, variant<NUMBERS...>, BOOLEAN, NULLT>::~json_t() {}
 
-    using _number_t = variant<
-        double, float, // long double,
-        uint64_t, int64_t,
-        uint32_t, int32_t,
-        uint16_t, int16_t,
-        uint8_t, int8_t
-    >;
 
-    using _string_t = variant<string>;
 
-    using JSON = json_t<map, vector, _string_t, _number_t, bool, nullptr_t>;
 
     template<template<typename, typename> typename OBJ, template<typename> typename VEC, typename STR, typename NUM, typename BOOL, typename NUL>
     ostream& operator<<(ostream& os, const lak::json_t<OBJ, VEC, STR, NUM, BOOL, NUL> &json)
@@ -583,6 +574,19 @@ namespace lak
         }
         return is;
     }
+
+    // JSON -> basic implementation of json_t
+
+    using _objkey_t = string;
+    using _string_t = variant<_objkey_t>;
+    using _number_t = variant<
+        double, float, // long double,
+        uint64_t, int64_t,
+        uint32_t, int32_t,
+        uint16_t, int16_t,
+        uint8_t, int8_t
+    >;
+    using JSON = json_t<_objkey_t, _string_t, _number_t, bool, nullptr_t>;
 
     static JSON operator "" _JSON(const char* str, const size_t size)
     {
