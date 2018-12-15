@@ -219,10 +219,10 @@ namespace lak
                 // checks the actual type at runtime
                 if constexpr (is_template_v<vector, T>)
                 {
+                    val.clear(); // always clear
                     if (obj->holds<array_t>())
                     {
-                        val.clear();
-                        rtn = true;
+                        rtn = true; // only return true if key exists and type is correct
                         // val is an array type
                         const array_t &array = (const array_t&)*obj;
                         for (const json_t &a : array)
@@ -244,10 +244,10 @@ namespace lak
                 }
                 else if constexpr (is_template_v<map, T> || is_template_v<unordered_map, T>)
                 {
+                    val.clear(); // always clear
                     if (obj->holds<object_t>())
                     {
-                        val.clear();
-                        rtn = true;
+                        rtn = true; // only return true if key exists and type is correct
                         // val is an object type
                         const object_t &object = (const object_t&)*obj;
                         for (const auto &[k, o] : object)
