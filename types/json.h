@@ -275,7 +275,7 @@ namespace lak
                 {
                     // T might have a `bool operator=(json)` function
                     // if not, this will probably throw a compiler error
-                    rtn = (val = *obj);
+                    rtn = (val = *obj); // if you can see this your type is missing an (type=json_t)->bool operator
                 }
             }
             return rtn;
