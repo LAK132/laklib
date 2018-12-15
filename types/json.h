@@ -217,7 +217,7 @@ namespace lak
                 // bad syntax and/or function calls by checking if T is one
                 // of the *possible* types for obj. the inner `obj->holds` then
                 // checks the actual type at runtime
-                if constexpr (is_template<vector, T>)
+                if constexpr (is_template_v<vector, T>)
                 {
                     if (obj->holds<array_t>())
                     {
@@ -242,7 +242,7 @@ namespace lak
                         }
                     }
                 }
-                else if constexpr (is_template<map, T> || is_template<unordered_map, T>)
+                else if constexpr (is_template_v<map, T> || is_template_v<unordered_map, T>)
                 {
                     if (obj->holds<object_t>())
                     {
