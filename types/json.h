@@ -56,6 +56,7 @@ namespace lak
     using std::holds_alternative;
     using std::get;
     using std::disjunction_v;
+    using std::is_same;
     using std::is_same_v;
     using std::remove_reference_t;
     using std::enable_if_t;
@@ -83,17 +84,19 @@ namespace lak
     template<typename T, typename V>
     static constexpr size_t get_index_v = get_index<T, V>::value;
 
-    template<template<typename, typename> typename OBJECT, template<typename> typename ARRAY, typename STRING, typename NUMBER, typename BOOLEAN, typename NULLT> struct json_t;
+    template<typename KEY, typename STRING, typename NUMBER, typename BOOLEAN, typename NULLT> struct json_t;
 
-    template<template<typename, typename> typename OBJECT, template<typename> typename ARRAY, typename ...STRINGS, typename ...NUMBERS, typename BOOLEAN, typename NULLT>
-    struct json_t<OBJECT, ARRAY, variant<STRINGS...>, variant<NUMBERS...>, BOOLEAN, NULLT>
+    template<typename KEY, typename ...STRINGS, typename ...NUMBERS, typename BOOLEAN, typename NULLT>
+    struct json_t<KEY, variant<STRINGS...>, variant<NUMBERS...>, BOOLEAN, NULLT>
     {
-        using string_t = variant<STRINGS...>;       // std::variant<std::string, ...>
-        using number_t = variant<NUMBERS...>;       // std::variant<double, float, int, ...>
-        using boolean_t = BOOLEAN;                  // bool
-        using null_t = NULLT;                       // nullptr_t
-        using object_t = OBJECT<string, json_t>;    // std::map like
-        using array_t = ARRAY<json_t>;              // std::vector like
+        using object_t = map<KEY, json_t>;
+        using array_t = vector<json_t>;
+        using objkey_t = typename object_t::key_type;
+        using arrkey_t = typename array_t::size_type;
+        using string_t = variant<STRINGS...>;   // std::variant<std::string, ...>
+        using number_t = variant<NUMBERS...>;   // std::variant<double, float, int, ...>
+        using boolean_t = BOOLEAN;              // bool
+        using null_t = NULLT;                   // nullptr_t
         using value_t = variant<object_t, array_t, string_t, number_t, boolean_t, null_t>;
 
         value_t value;
@@ -168,13 +171,25 @@ namespace lak
         ~json_t();
 
         // subscript notation for object (string index) and array (number index) types
-        inline json_t &operator[](const string &key)    { return get_checked<object_t>(value)[key]; }
-        inline json_t &operator[](const size_t &index)  { return get_checked<array_t>(value)[index]; }
-        inline const json_t &operator[](const string &key) const    { return get_checked<object_t>(value)[key]; }
-        inline const json_t &operator[](const size_t &index) const  { return get_checked<array_t>(value)[index]; }
+        inline json_t &operator[](const objkey_t &key)
+        {
+            return get_checked<object_t>(value)[key];
+        }
+        inline json_t &operator[](const arrkey_t &key)
+        {
+            return get_checked<array_t>(value)[key];
+        }
+        inline const json_t &operator[](const objkey_t &key) const
+        {
+            return get_checked<object_t>(value)[key];
+        }
+        inline const json_t &operator[](const arrkey_t &key) const
+        {
+            return get_checked<array_t>(value)[key];
+        }
 
         // subscript notation for object and array types, but returns nullptr if index doesn't exist
-        inline json_t *operator()(const string &key)
+        inline json_t *operator()(const objkey_t &key)
         {
             if (!holds<object_t>())
                 return nullptr;
@@ -182,14 +197,14 @@ namespace lak
             auto &&it = obj.find(key);
             return it != obj.end() ? &(it->second) : nullptr;
         }
-        inline json_t *operator()(const size_t &index)
+        inline json_t *operator()(const arrkey_t &key)
         {
             if (!holds<array_t>())
                 return nullptr;
             array_t &arr = get_checked<array_t>(value);
-            return index < arr.size() ? &(arr[index]) : nullptr;
+            return key < arr.size() ? &(arr[key]) : nullptr;
         }
-        inline const json_t *operator()(const string &key) const
+        inline const json_t *operator()(const objkey_t &key) const
         {
             if (!holds<object_t>())
                 return nullptr;
@@ -197,18 +212,18 @@ namespace lak
             const auto &it = obj.find(key);
             return it != obj.end() ? &(it->second) : nullptr;
         }
-        inline const json_t *operator()(const size_t &index) const
+        inline const json_t *operator()(const arrkey_t &key) const
         {
             if (!holds<array_t>())
                 return nullptr;
             const array_t &arr = get_checked<array_t>(value);
-            return index < arr.size() ? &(arr[index]) : nullptr;
+            return key < arr.size() ? &(arr[key]) : nullptr;
         }
 
         // type-safe copy from index into val, val not touched if incorrect type or non-existent index
-        template<typename KEY, typename T>
-        inline enable_if_t<is_same_v<KEY, string> || is_same_v<KEY, size_t>,
-        bool> operator()(const KEY &key, T &val) const
+        template<typename K, typename T>
+        inline enable_if_t<is_same_v<K, objkey_t> || is_same_v<K, arrkey_t>,
+        bool> operator()(const K &key, T &val) const
         {
             bool rtn = false;
             if (const json_t *obj = (*this)(key); obj)
@@ -383,27 +398,34 @@ namespace lak
         template<typename T> explicit inline operator T() const { return as_const<T>(); }
     };
 
-    template<template<typename, typename> typename OBJECT, template<typename> typename ARRAY, typename ...STRINGS, typename ...NUMBERS, typename BOOLEAN, typename NULLT>
-    json_t<OBJECT, ARRAY, variant<STRINGS...>, variant<NUMBERS...>, BOOLEAN, NULLT>::json_t() : value(json_t::object_t{}) {}
+    template<typename KEY, typename ...STRINGS, typename ...NUMBERS, typename BOOLEAN, typename NULLT>
+    json_t<KEY, variant<STRINGS...>, variant<NUMBERS...>, BOOLEAN, NULLT>::json_t() : value(json_t::object_t{}) {}
 
-    template<template<typename, typename> typename OBJECT, template<typename> typename ARRAY, typename ...STRINGS, typename ...NUMBERS, typename BOOLEAN, typename NULLT>
-    json_t<OBJECT, ARRAY, variant<STRINGS...>, variant<NUMBERS...>, BOOLEAN, NULLT>::~json_t() {}
+    template<typename KEY, typename ...STRINGS, typename ...NUMBERS, typename BOOLEAN, typename NULLT>
+    json_t<KEY, variant<STRINGS...>, variant<NUMBERS...>, BOOLEAN, NULLT>::~json_t() {}
 
+    template<typename ...T> using json_object_t     = typename json_t<T...>::object_t;
+    template<typename ...T> using json_objkey_t     = typename json_t<T...>::objkey_t;
+    template<typename ...T> using json_array_t      = typename json_t<T...>::array_t;
+    template<typename ...T> using json_arrkey_t     = typename json_t<T...>::arrkey_t;
+    template<typename ...T> using json_objkey_t     = typename json_t<T...>::objkey_t;
+    template<typename ...T> using json_string_t     = typename json_t<T...>::string_t;
+    template<typename ...T> using json_number_t     = typename json_t<T...>::number_t;
+    template<typename ...T> using json_boolean_t    = typename json_t<T...>::boolean_t;
+    template<typename ...T> using json_null_t       = typename json_t<T...>::null_t;
+    template<typename ...T> using json_value_t      = typename json_t<T...>::value_t;
 
-
-
-    template<template<typename, typename> typename OBJ, template<typename> typename VEC, typename STR, typename NUM, typename BOOL, typename NUL>
-    ostream& operator<<(ostream& os, const lak::json_t<OBJ, VEC, STR, NUM, BOOL, NUL> &json)
+    template<typename ...T>
+    ostream& operator<<(ostream& os, const json_t<T...> &json)
     {
-        using namespace lak;
-        using this_t = json_t<OBJ, VEC, STR, NUM, BOOL, NUL>;
-        using object_t = typename this_t::object_t;
-        using array_t = typename this_t::array_t;
-        using string_t = typename this_t::string_t;
-        using number_t = typename this_t::number_t;
-        using boolean_t = typename this_t::boolean_t;
-        using null_t = typename this_t::null_t;
-        using value_t = typename this_t::value_t;
+        using this_t    = json_t<T...>;
+        using object_t  = json_object_t<T...>;
+        using array_t   = json_array_t<T...>;
+        using string_t  = json_string_t<T...>;
+        using number_t  = json_number_t<T...>;
+        using boolean_t = json_boolean_t<T...>;
+        using null_t    = json_null_t<T...>;
+        using value_t   = json_value_t<T...>;
 
         switch(json.value.index())
         {
@@ -489,18 +511,18 @@ namespace lak
         }
         return os;
     }
-    template<template<typename, typename> typename OBJ, template<typename> typename VEC, typename STR, typename NUM, typename BOOL, typename NUL>
-    istream& operator>>(istream& is, lak::json_t<OBJ, VEC, STR, NUM, BOOL, NUL> &json)
+
+    template<typename ...T>
+    istream& operator>>(istream& is, json_t<T...> &json)
     {
-        using namespace lak;
-        using this_t = json_t<OBJ, VEC, STR, NUM, BOOL, NUL>;
-        using object_t = typename this_t::object_t;
-        using array_t = typename this_t::array_t;
-        using string_t = typename this_t::string_t;
-        using number_t = typename this_t::number_t;
-        using boolean_t = typename this_t::boolean_t;
-        using null_t = typename this_t::null_t;
-        using value_t = typename this_t::value_t;
+        using this_t    = json_t<T...>;
+        using object_t  = json_object_t<T...>;
+        using array_t   = json_array_t<T...>;
+        using string_t  = json_string_t<T...>;
+        using number_t  = json_number_t<T...>;
+        using boolean_t = json_boolean_t<T...>;
+        using null_t    = json_null_t<T...>;
+        using value_t   = json_value_t<T...>;
 
         skipAll(is, LAK_JSON_WHITESPACE);
         switch(is.peek())
