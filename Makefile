@@ -24,7 +24,7 @@ lak_utils_DEP = lak
 
 lak_types_SRC = $(lak_SRC)/types
 lak_types_OBJ = shader.cpp mesh.cpp queue.cpp stride_vector.cpp
-lak_types_HDR = shader.h mesh.h json.h queue.h stride_vector.h texture.h type_list.h color.h image.h
+lak_types_HDR = shader.h mesh.h json.h queue.h stride_vector.h texture.h type_list.h color.h image.h gltf.h
 lak_types_INC = $(lak_SRC)
 lak_types_DEP = lak lak_utils sdl glm opengl
 
