@@ -299,14 +299,12 @@ namespace lak
                 is_same<remove_reference_t<T>, null_t>
             >)
                 value = rhs;
-            else {
-                static_assert(always_false_v<T>, "Bad type");
-                // assert(false);
-            }
+            else
+                *this << rhs; // if you can see this your type is missing an json_t << type operator
         }
 
         template<typename T>
-        json_t &operator=(const T &rhs)
+        inline json_t &operator=(const T &rhs)
         {
             if constexpr(is_same_v<remove_reference_t<T>, json_t>)
                 value = rhs.value;
@@ -323,10 +321,8 @@ namespace lak
                 is_same<remove_reference_t<T>, null_t>
             >)
                 value = rhs;
-            else {
-                static_assert(always_false_v<T>, "Bad type");
-                // assert(false);
-            }
+            else
+                *this << rhs; // if you can see this your type is missing an json_t << type operator
             return *this;
         }
 
